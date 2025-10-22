@@ -9,7 +9,7 @@ Short story long: This is a simple HTTP server and client written in Go that onl
 
 ### in case you, for whatever reason, want to run it:
 - download the repo
-- edit the `main.go` file the `client` directory to replace the value of the `url` var with your own:
+- edit the `main.go` file the `client` directory to replace the value of the `url` var with your own (please note that, by default, the port is `8008`):
 ```go
     url string = "http://your.server.address:8008"
 ```
