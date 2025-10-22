@@ -22,7 +22,7 @@ go build .
 go build .
 ```
 - create a systemd service
-```toml
+```service
 [Unit]
 Description=post request diary server
 After=network.target
