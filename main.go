@@ -37,7 +37,7 @@ func post(w http.ResponseWriter, r *http.Request) {
 	second := curTime.Second()
 	fileDir := fmt.Sprintf("%d/%s", year, month)
 	filePath := fmt.Sprintf("%d/%s/%d.md", year, month, day)
-	line := fmt.Sprintf("`%d:%d.%d` - %s\n", hour, minute, second, body)
+	line := fmt.Sprintf("`%d:%d:%d` - %s\n", hour, minute, second, body)
 	fmt.Printf("%s:\n", filePath)
 	fmt.Printf("  %s", line)
 	_, err = os.Stat(fileDir)
