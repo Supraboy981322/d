@@ -11,7 +11,7 @@ Short story long: This is a simple HTTP server and client written in Go that onl
 - download the repo
 - edit the `main.go` file the `client` directory to replace the value of the `url` var with your own:
 ```go
-    url string = "http://your.server.address.or.ip.and.port:8008"
+    url string = "http://your.server.address:8008"
 ```
 - compile the server (make sure you're in the root directory of the repo):
 ```go
