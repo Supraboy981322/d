@@ -9,13 +9,19 @@ import (
 )
 
 var (
-	args []string = os.Args[1:]
 	//change this to your address!
-	url string = "[address redacted]"
-	line string = args[0]
+	url string = "[redacted address]"
+	line string
 )
 
 func main() {
+	if len(os.Args) > 1 {
+		line = os.Args[1]
+	} else {
+		log.Printf("no input")
+		return
+	}
+
 	client := &http.Client{
 		Timeout: time.Second * 10,
 	}
