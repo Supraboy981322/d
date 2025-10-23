@@ -17,6 +17,7 @@ var (
 
 func main() {
 	log.SetFlags(log.Flags() &^ (log.Ldate | log.Ltime))
+
 	if len(os.Args) > 1 {
 		line = os.Args[1]
 	} else {
@@ -34,6 +35,7 @@ func main() {
 	}
 
 	req.Header.Set("Content-Type", "text/plain")
+
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatalf("err sending request: %v\n", err)
@@ -43,6 +45,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to read body:  %v\n", err)
 	}
+
 	log.Println(string(body))
 
 	defer resp.Body.Close()
