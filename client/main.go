@@ -6,15 +6,17 @@ import (
 	"strings"
 	"time"
 	"os"
+	"io"
 )
 
 var (
 	//change this to your address!
-	url string = "[redacted address]"
+	url string = "http://localhost:8008"
 	line string
 )
 
 func main() {
+	log.SetFlags(log.Flags() &^ (log.Ldate | log.Ltime))
 	if len(os.Args) > 1 {
 		line = os.Args[1]
 	} else {
@@ -37,7 +39,11 @@ func main() {
 		log.Fatalf("err sending request: %v\n", err)
 	}
 
-	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalf("failed to read body:  %v\n", err)
+	}
+	log.Println(string(body))
 
-	log.Printf("Response Status:  %s\n", resp.Status)
+	defer resp.Body.Close()
 }
