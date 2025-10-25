@@ -11,7 +11,7 @@ import (
 
 var (
 	//change this to your address!
-	url string = "http://localhost:8008"
+	url string = "[url redacted]"
 	line string
 )
 

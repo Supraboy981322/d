@@ -11,9 +11,35 @@ import (
 
 func main() {
 	fmt.Println("starting `d`")
+	http.HandleFunc("/d", serveClient)
 	http.HandleFunc("/", post)
-
+	
 	log.Fatal(http.ListenAndServe(":8008", nil))
+}
+
+func serveClient(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusTeapot)
+		return
+	}
+
+	file, err := os.Open("dClient")
+	if err != nil {
+		http.Error(w, "ERR! Cannot find client binary", http.StatusNotFound)
+		log.Printf("err opening file:  %v", err)
+		return
+	}
+
+	defer file.Close()
+
+	w.Header().Set("Content-Type", "application/octet-stream")
+
+	_, err = io.Copy(w, file)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("err serving binary:  %v", err), http.StatusInternalServerError)
+		log.Printf("err serving binary:  %v", err)
+		return
+	}
 }
 
 func post(w http.ResponseWriter, r *http.Request) {
