@@ -11,12 +11,6 @@ Short story long: This is a simple HTTP server and client written in Go that onl
 
 ### server 
 - download the repo
-- edit the `main.go` file the `client` directory to replace the value of the `url` var with your own
-
-  (please note that, by default, the port is `8008`):
-  ```go
-    url string = "http://your.server.address:8008"
-  ```
 - compile the server
   (make sure you're in the root directory of the repo):
   ```go
@@ -36,6 +30,14 @@ Short story long: This is a simple HTTP server and client written in Go that onl
   [Install]
   WantedBy=multi-user.target
   ```
+
+### client
+- edit the `main.go` file the `client` directory to replace the value of the `url` var with your own
+
+  (please note that, by default, the port is `8008`):
+  ```go
+  url string = "http://your.server.address:8008"
+  ```
 - In order to download the client binary from your server (optional, but recommended):
   - compile the client binary
     ```bash
@@ -44,4 +46,8 @@ Short story long: This is a simple HTTP server and client written in Go that onl
   - move the client binary to your library dir (and rename it to `dClient` 
     ```bash
     mv d /your/library/dir/dClient
+    ```
+  - download binary from server
+    ```bash
+    wget https://your.server.address:8008/d
     ```
