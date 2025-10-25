@@ -39,7 +39,7 @@ Short story long: This is a simple HTTP server and client written in Go that onl
 - In order to download the client binary from your server (optional, but recommended):
   - compile the client binary
     ```bash
-    cd client;go build .
+    cd client && go build .
     ```
   - move the client binary to your library dir (and rename it to `dClient` 
     ```bash
