@@ -32,22 +32,31 @@ Short story long: This is a simple HTTP server and client written in Go that onl
   ```
 
 ### client
-- edit the `main.go` file the `client` directory to replace the value of the `url` var with your own
-
-  (please note that, by default, the port is `8008`):
-  ```go
-  url string = "http://your.server.address:8008"
-  ```
 - In order to download the client binary from your server (optional, but recommended):
   - compile the client binary
-    ```bash
+    ```sh
     cd client && go build .
     ```
   - move the client binary to your library dir (and rename it to `dClient` 
-    ```bash
+    ```sh
     mv d /your/library/dir/dClient
     ```
   - download binary from server
-    ```bash
+    ```sh
     wget https://your.server.address:8008/d
+    ```
+- Move the `d` client to a location in your path:
+  
+    eg: `/usr/bin`
+    ```sh
+    mv d /usr/bin
+    ```
+- Make the binary executable (may need `su`):
+    ```sh
+    chmod a+x d
+    ```
+- Put your `d` server address in your config:
+    ```toml
+    [server]
+    address = "https://your.server.address/
     ```
