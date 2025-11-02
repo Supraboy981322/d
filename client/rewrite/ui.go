@@ -53,25 +53,25 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() string {
 	if m.quitting {
 		return "quitting...\n"
-	}
-
-	out := ""
-	out += fmt.Sprintf("resp:  %s\n", m.response)
+	} else {
+		out := ""
+		out += fmt.Sprintf("resp:  %s\n", m.response)
+		
+		if m.config != nil {
+			out += fmt.Sprintf("server:  %s\n", m.config.Server)
+		}
 	
-	if m.config != nil {
-		out += fmt.Sprintf("server:  %s\n", m.config.Server)
-	}
-
-	if m.err != nil {
-		out += fmt.Sprintf("err:  %v\n", m.err)
-		out += "\npress q to quit.\n"
+		if m.err != nil {
+			out += fmt.Sprintf("err:  %v\n", m.err)
+			out += "\npress q to quit.\n"
+			return out
+		}
+	
+		if m.line != "" {
+			out += "press q to quit.\n"
+			return out
+		}
+		out += "working...\n"
 		return out
 	}
-
-	if m.line != "" {
-		out += "press q to quit.\n"
-		return out
-	}
-	out += "working...\n"
-	return out
 }
