@@ -72,8 +72,7 @@ func chkArgs() tea.Cmd {
 			return argsMsg(line)
 		}
 		wserr("no input")
-		tea.Quit
-		return argsMsg(line)
+		return tea.Quit
 	}
 }
 
