@@ -9,14 +9,14 @@ Short story long: This is a simple HTTP server and client written in Go that onl
 
 ## Installation:
 
-### server 
-- download the repo
-- compile the server
+### Server 
+- Download the repo
+- Compile the server
   (make sure you're in the root directory of the repo):
   ```go
   go build .
   ```
-- create a systemd service
+- Create a systemd service
   ```service
   [Unit]
   Description=post request diary server
@@ -31,17 +31,17 @@ Short story long: This is a simple HTTP server and client written in Go that onl
   WantedBy=multi-user.target
   ```
 
-### client
+### Client
 - In order to download the client binary from your server (optional, but recommended):
-  - compile the client binary
+  - Compile the client binary
     ```sh
     cd client && go build .
     ```
-  - move the client binary to your library dir (and rename it to `dClient` 
+  - Move the client binary to your library dir (and rename it to `dClient` 
     ```sh
     mv d /your/library/dir/dClient
     ```
-  - download binary from server
+  - Download binary from server
     ```sh
     wget https://your.server.address:8008/d
     ```
