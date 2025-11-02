@@ -58,5 +58,5 @@ Short story long: This is a simple HTTP server and client written in Go that onl
 - Put your `d` server address in your config:
     ```toml
     [server]
-    address = "https://your.server.address/
+    address = "https://your.server.address/"
     ```
