@@ -45,6 +45,7 @@ type (
 		line string
 		response string
 		spinner spinner.Model
+		spinOn bool
 		quitting bool
 		chkErr bool
 		err error
@@ -66,7 +67,8 @@ func (e errMsg) Error() string {
 	return e.error.Error()
 }
 
-func chkArgs() tea.Cmd {
+func chkArgs(m model) tea.Cmd {
+	m.spinOn = true
 	return func() tea.Msg {
 		//chk args
 		if len(os.Args) > 1 {
@@ -77,12 +79,15 @@ func chkArgs() tea.Cmd {
 	}
 }
 
-func readConf() tea.Cmd {
+func readConf(m model) tea.Cmd {
+	m.spinOn = true
 	return func() tea.Msg {
 		//get ~
 		homeDir, err := os.UserHomeDir()
-		hanFrr(err)
-	
+		if err != nil {	
+			return quitErrMsg(merr("failed to get home dir", nil))
+		}
+
 		//set actual conf dir and path
 		confDir = homeDir + confDir
 		confPath = confDir + confPath
@@ -91,17 +96,25 @@ func readConf() tea.Cmd {
 		_, err = os.Stat(confPath)
 		if os.IsNotExist(err) {
 			//mk if not
-			hanErr(os.MkdirAll(confDir, 0755))
+			err := os.MkdirAll(confDir, 0755)
+			if err != nil {
+				return quitErrMsg(merr("failed to create config dir", nil))
+			}
 			
 			//write default conf
-			hanFrr(os.WriteFile(
+			err = (os.WriteFile(
 				confPath, defaultConfig, 0644))
+			if err != nil {
+				return quitErrMsg(merr("failed to create config", nil))
+			}
 		}
 	
 		//read conf
 		var conf Config
 		_, err = toml.DecodeFile(confPath, &conf)
-		hanFrr(err)
+		if err != nil {
+			return quitErrMsg(merr("failed to decode config", nil))
+		}
 		
 		//set url from conf
 		url := conf.Server.Addr
@@ -112,7 +125,7 @@ func readConf() tea.Cmd {
 	}
 }
 
-func sendReq() tea.Cmd {
+func sendReq(m model) tea.Cmd {
 	return func() tea.Msg {
 		//create http client
 		//  timeout after 10 seconds
@@ -122,30 +135,25 @@ func sendReq() tea.Cmd {
 	
 		//create req
 			req, err := http.NewRequest(
-			"POST", url, strings.NewReader(line))
+			"POST", m.url, strings.NewReader(line))
 		if err != nil {
-			if e, ok := merr("server address not set", err).(errMsg); ok {
-				return errMsg(e)
-			}
+			return quitErrMsg(merr("failed to create request\n", nil))
 		}
 	
 		//set header (not needed, but just to be safe)
 		req.Header.Set("Content-Type", "text/plain")
-	
+
 		//mk req
 		resp, err := client.Do(req)
 		if err != nil {
-			if e, ok := merr("failed to send request", err).(errMsg); ok {
-				return errMsg(e)
-			}
+			wrl(url)
+			return quitErrMsg(merr("failed to send request\n", nil))
 		}
 	
 		//read resp 
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
-			if e, ok := merr("server address not set", err).(errMsg); ok {
-				return errMsg(e)
-			}
+			return quitErrMsg(merr("failed to read response\n", nil))
 		}
 	
 		//return resp

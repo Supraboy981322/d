@@ -4,16 +4,18 @@ import(
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
-//	"github.com/charmbracelet/bubbles/spinner"
-//	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/bubbles/spinner"
+	"github.com/charmbracelet/lipgloss"
 )
 
-/*func initialModel() model {
+func initialModel() model {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
-	
-}*/
+	return model{
+		spinner: sp,
+	}
+}
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -33,18 +35,21 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.quitting = true 
 		return m, tea.Quit
 	case argsMsg:
+		m.spinner.Update("reading conf")
 		line = string(msg)
 		cmd := func() tea.Msg {
-			return readConf()()
+			return readConf(m)()
 		}
 		return m, cmd
 	case confMsg:
+		m.spinner.Update("sending request")
 		m.url = string(msg)
 		cmd := func() tea.Msg {
-			return sendReq()()
+			return sendReq(m)()
 		}
 		return m, cmd
 	case respMsg:
+		m.spinner.Update("quitting...")
 		m.response = string(msg)
 		return m, tea.Quit
 	case errMsg:
@@ -84,6 +89,5 @@ func (m model) View() string {
 		out += "press q to quit.\n"
 		return out
 	}
-	out += "working...\n"
 	return out
 }
