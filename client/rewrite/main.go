@@ -36,7 +36,8 @@ type (
 	confMsg string
 	argsMsg string
 	respMsg string
-	errMsg struct{ error }
+	errMsg struct { error }
+	quitErrMsg error
 
 	model struct {
 		url string
@@ -45,6 +46,7 @@ type (
 		response string
 		spinner spinner.Model
 		quitting bool
+		noInput bool
 		err error
 	}
 )
@@ -71,8 +73,7 @@ func chkArgs() tea.Cmd {
 			line = os.Args[1]
 			return argsMsg(line)
 		}
-		wserr("no input")
-		return tea.Quit
+		return quitErrMsg(merr("no input", nil))
 	}
 }
 

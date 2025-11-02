@@ -25,6 +25,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		default:
 			return m, nil
 		}
+	case quitErrMsg:
+		if msg.Error() == "no input" {
+			m.noInput = true
+		}
+		m.quitting = true 
+		return m, tea.Quit
 	case argsMsg:
 		line = string(msg)
 		cmd := func() tea.Msg {
@@ -52,26 +58,31 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	if m.quitting {
-		return "quitting...\n"
-	} else {
-		out := ""
-		out += fmt.Sprintf("resp:  %s\n", m.response)
-		
-		if m.config != nil {
-			out += fmt.Sprintf("server:  %s\n", m.config.Server)
+		var returnStr string
+		if m.noInput {
+			returnStr = "no input\n"
 		}
+		returnStr += "quitting...\n"
+		return returnStr
+	}
+
+	out := ""
+	out += fmt.Sprintf("resp:  %s\n", m.response)
 	
-		if m.err != nil {
-			out += fmt.Sprintf("err:  %v\n", m.err)
-			out += "\npress q to quit.\n"
-			return out
-		}
-	
-		if m.line != "" {
-			out += "press q to quit.\n"
-			return out
-		}
-		out += "working...\n"
+	if m.config != nil {
+		out += fmt.Sprintf("server:  %s\n", m.config.Server)
+	}
+
+	if m.err != nil {
+		out += fmt.Sprintf("err:  %v\n", m.err)
+		out += "\npress q to quit.\n"
 		return out
 	}
+
+	if m.line != "" {
+		out += "press q to quit.\n"
+		return out
+	}
+	out += "working...\n"
+	return out
 }
