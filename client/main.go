@@ -41,21 +41,15 @@ func main() {
 	}
 
 	req, err := http.NewRequest("POST", url, strings.NewReader(line))
-	if err != nil {
-		log.Fatalf("err sending request:  %v\n", err)
-	}
+	hanFrr(err)
 
 	req.Header.Set("Content-Type", "text/plain")
 
 	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatalf("err sending request: %v\n", err)
-	}
+	hanFrr(err)
 
 	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalf("failed to read body:  %v\n", err)
-	}
+	hanFrr(err)
 
 	log.Println(string(body))
 
