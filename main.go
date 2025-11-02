@@ -25,18 +25,23 @@ func serveClient(w http.ResponseWriter, r *http.Request) {
 
 	file, err := os.Open("dClient")
 	if err != nil {
-		http.Error(w, "ERR! Cannot find client binary", http.StatusNotFound)
+		http.Error(w,
+			"ERR! Cannot find client binary",
+			http.StatusNotFound)
 		log.Printf("err opening file:  %v", err)
 		return
 	}
 
 	defer file.Close()
 
-	w.Header().Set("Content-Type", "application/octet-stream")
+	w.Header().Set("Content-Type", 
+		"application/octet-stream")
 
 	_, err = io.Copy(w, file)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("err serving binary:  %v", err), http.StatusInternalServerError)
+		http.Error(w,
+			fmt.Sprintf("err serving binary:  %v", err),
+			http.StatusInternalServerError)
 		log.Printf("err serving binary:  %v", err)
 		return
 	}
@@ -50,7 +55,9 @@ func post(w http.ResponseWriter, r *http.Request) {
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		http.Error(w, "Err reading request body", http.StatusInternalServerError)
+		http.Error(w,
+			"Err reading request body",
+			http.StatusInternalServerError)
 		return
 	}
 
@@ -61,24 +68,31 @@ func post(w http.ResponseWriter, r *http.Request) {
 	hour := curTime.Hour()
 	minute := curTime.Minute()
 	second := curTime.Second()
-	fileDir := fmt.Sprintf("%d/%s", year, month)
-	filePath := fmt.Sprintf("%d/%s/%d.md", year, month, day)
-	line := fmt.Sprintf("`%d:%d:%d` - %s\n", hour, minute, second, body)
+	fileDir := fmt.Sprintf("%d/%s",
+		year, month)
+	filePath := fmt.Sprintf("%d/%s/%d.md",
+		year, month, day)
+	line := fmt.Sprintf("`%d:%d:%d` - %s\n",
+		hour, minute, second, body)
 	fmt.Printf("%s:\n", filePath)
 	fmt.Printf("  %s", line)
 	_, err = os.Stat(fileDir)
 	if os.IsNotExist(err) {
 		err = os.MkdirAll(fileDir, 0777) 
 		if err != nil {
-			log.Fatalf("err creating directory:  %v\n", err)
+			log.Fatalf(
+				"err creating directory:  %v\n", err)
 			return
 		}
 	}
 	if err != nil {
-		log.Fatalf("err checking if directory even exists:  %v\n", err)
+		log.Fatalf(
+			"err checking if directory even exists:  %v\n",
+			err)
 		return
 	}
-	file, err := os.OpenFile(filePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0777)
+	file, err := os.OpenFile(filePath,
+		os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0777)
 	if err != nil {
 		log.Fatalf("err openning file:  %v", err)
 		return
