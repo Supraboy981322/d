@@ -7,12 +7,23 @@ import (
 	"time"
 	"os"
 	"io"
+
+	"github.com/BurntSushi/toml"
 )
 
 var (
-	//change this to your address!
-	url string = "http://localhost:8008"
+	url string
 	line string
+	confDir = "/.config/Supraboy981322/d"
+	confPath = "config.toml"
+	defaultConfig = []byte(`[server]
+address = "https://example.com"`)
+)
+
+type (
+	Config struct {
+		Addr string `toml:"address"`
+	}
 )
 
 func main() {
@@ -49,4 +60,31 @@ func main() {
 	log.Println(string(body))
 
 	defer resp.Body.Close()
+}
+
+func readConf(what string) string {
+	homeDir, err := os.UserHomeDir()
+	hanFerr(err)
+
+	confDir = homeDir + confDir
+	confPath = confDir + confPath
+
+	_, err = os.Stat(confPath)
+	if os.IsNotExist(err) {
+		hanErr(os.MkdirAll(confDir, 0755))
+		
+		hanFrr(os.WriteFile(confPath, defaultConfig, 0644))
+	}
+
+	var conf Config
+	_, err := toml.DecodeFile(confPath, &conf)
+	hanFrr(err)
+
+	url = conf.Addr
+	if url == "https://example.com/" {
+		wserr("\033[31m..you don't appear to " + 
+						"have configured the address" + 
+						"for your server\033[0m")
+		fserr("....see \033[32m-h\033[0m")
+	}	
 }
