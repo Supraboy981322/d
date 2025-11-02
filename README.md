@@ -10,6 +10,7 @@ Short story long:
 - This is a simple HTTP server and client written in Go that only excepts `POST` requests.
 - It then takes the body of the post request and appends it to the end of a markdown file
 - Then it writes the markdown file to a path with the current date
+
     (eg: `2025/10/21.md` for the 21st of October in 2025).
 
 Short story shorter:
