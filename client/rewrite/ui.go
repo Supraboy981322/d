@@ -26,8 +26,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 	case quitErrMsg:
-		if msg.Error() == "no input" {
-			m.noInput = true
+		if msg != nil {
+			m.chkErr = true
+			m.err = msg
 		}
 		m.quitting = true 
 		return m, tea.Quit
@@ -59,8 +60,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() string {
 	if m.quitting {
 		var returnStr string
-		if m.noInput {
-			returnStr = "no input\n"
+		if m.chkErr {
+			returnStr = m.err.Error()
 		}
 		returnStr += "quitting...\n"
 		return returnStr

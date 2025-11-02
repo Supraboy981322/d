@@ -46,7 +46,7 @@ type (
 		response string
 		spinner spinner.Model
 		quitting bool
-		noInput bool
+		chkErr bool
 		err error
 	}
 )
@@ -106,9 +106,7 @@ func readConf() tea.Cmd {
 		//set url from conf
 		url := conf.Server.Addr
 		if url == "https://example.com/" || url == "" {
-			if e, ok := merr("server address not set", nil).(errMsg); ok {
-				return errMsg(e)
-			}
+			return quitErrMsg(merr("server address not set", nil))
 		}
 		return confMsg(url)
 	}
