@@ -19,25 +19,31 @@ func main() {
 }
 
 func serveClient(w http.ResponseWriter, r *http.Request) {
+	//chk the mtd type
+	//  if GET, it's valid
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusTeapot)
 		return
 	}
 
+	//open the client binary
 	file, err := os.Open("dClient")
 	if err != nil {
 		http.Error(w,
 			"ERR! Cannot find client binary",
 			http.StatusNotFound)
-		merr("err opening file:  ", err)
+		merr("err openning binary:  ", err)
 		return
 	}
 
+	//close file when fn ends
 	defer file.Close()
 
+	//let client know it's a binary 
 	w.Header().Set("Content-Type", 
 		"application/octet-stream")
 
+	//send the binary to the client
 	_, err = io.Copy(w, file)
 	if err != nil {
 		http.Error(w,
@@ -49,11 +55,14 @@ func serveClient(w http.ResponseWriter, r *http.Request) {
 }
 
 func post(w http.ResponseWriter, r *http.Request) {
+	//chk the mtd type
+	//  if POST, it's valid 
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusTeapot)
 		return
 	}
 
+	//read req body 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w,
@@ -62,35 +71,44 @@ func post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	curTime := time.Now()
-	year := curTime.Year()
-	month := curTime.Month()
-	day := curTime.Day()
-	hour := curTime.Hour()
-	minute := curTime.Minute()
-	second := curTime.Second()
-	fileDir := fmt.Sprintf("%d/%s",
-		year, month)
-	filePath := fmt.Sprintf("%d/%s/%d.md",
-		year, month, day)
-	line := fmt.Sprintf("`%d:%d:%d` - %s\n",
-		hour, minute, second, body)
-	fmt.Printf("%s:\n", filePath)
-	fmt.Printf("  %s", line)
+	curTime := time.Now()                   //get time, then use to get:
+	year := curTime.Year()                  //  year
+	month := curTime.Month()                //  month
+	day := curTime.Day()                    //  day
+	hour := curTime.Hour()                  //  hour
+	minute := curTime.Minute()              //  minute
+	second := curTime.Second()              //  second
+	fileDir := fmt.Sprintf("%d/%s",         //construct file dir from 
+		year, month)                          //  eg: 2025/November
+	filePath := fmt.Sprintf("%s/%d.md",     //construct filepath
+		fileDir, day)                         //  eg: 2025/November/2.md
+	line := fmt.Sprintf("`%d:%d:%d` - %s\n",//construct the line
+		hour, minute, second, body)           //  eg: `9:27:34` - foo
+	wrl(filePath + ":")                     //log the filepath
+	wrl("  " + line)                        //log the line
+
+	//chk if dir exists
 	_, err = os.Stat(fileDir)
 	if os.IsNotExist(err) {
+		//create dir if not
 		err = os.MkdirAll(fileDir, 0777) 
 		hanFrr(err)
 	}
 	hanFrr(err)
+	
+	//open file in append mode,
+	//  create if not exist
 	file, err := os.OpenFile(filePath,
 		os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0777)
 	hanFrr(err)
+	//close file when fn ends 
 	defer file.Close()
 
+	//write the line to the file
 	_, err = file.WriteString(line)
 	hanFrr(err)
 
+	//finally, respond to client
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("recieved"))
 }
