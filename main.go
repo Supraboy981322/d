@@ -6,15 +6,16 @@ import (
 	"os"
 	"time"
 	"io/ioutil"
-	"log"
+	"io"
 )
 
 func main() {
-	fmt.Println("starting `d`")
+	wrl("starting \033[32md\033[0m...")
 	http.HandleFunc("/d", serveClient)
 	http.HandleFunc("/", post)
 	
-	log.Fatal(http.ListenAndServe(":8008", nil))
+	wrl("started.")
+	ferr(http.ListenAndServe(":8008", nil))
 }
 
 func serveClient(w http.ResponseWriter, r *http.Request) {
@@ -28,7 +29,7 @@ func serveClient(w http.ResponseWriter, r *http.Request) {
 		http.Error(w,
 			"ERR! Cannot find client binary",
 			http.StatusNotFound)
-		log.Printf("err opening file:  %v", err)
+		merr("err opening file:  ", err)
 		return
 	}
 
@@ -40,9 +41,9 @@ func serveClient(w http.ResponseWriter, r *http.Request) {
 	_, err = io.Copy(w, file)
 	if err != nil {
 		http.Error(w,
-			fmt.Sprintf("err serving binary:  %v", err),
+			"err serving binary:  " + err.Error(),
 			http.StatusInternalServerError)
-		log.Printf("err serving binary:  %v", err)
+		merr("err serving binary:  ", err)
 		return
 	}
 }
@@ -79,31 +80,16 @@ func post(w http.ResponseWriter, r *http.Request) {
 	_, err = os.Stat(fileDir)
 	if os.IsNotExist(err) {
 		err = os.MkdirAll(fileDir, 0777) 
-		if err != nil {
-			log.Fatalf(
-				"err creating directory:  %v\n", err)
-			return
-		}
+		hanFrr(err)
 	}
-	if err != nil {
-		log.Fatalf(
-			"err checking if directory even exists:  %v\n",
-			err)
-		return
-	}
+	hanFrr(err)
 	file, err := os.OpenFile(filePath,
 		os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0777)
-	if err != nil {
-		log.Fatalf("err openning file:  %v", err)
-		return
-	}
+	hanFrr(err)
 	defer file.Close()
 
 	_, err = file.WriteString(line)
-	if err != nil {
-		log.Fatalf("err writting to file:  %v\n", err)
-		return
-	}
+	hanFrr(err)
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("recieved"))

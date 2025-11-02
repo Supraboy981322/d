@@ -61,3 +61,9 @@ func hanFrr(err error) {
 		ferr(err)
 	}
 }
+
+func merr(str string, err error) {
+	erorStr := str + err.Error()
+	eror := errors.New(erorStr)
+	werr(eror)
+}
