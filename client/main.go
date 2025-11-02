@@ -2,7 +2,6 @@ package main
 
 import (
 	"net/http"
-	"log"
 	"strings"
 	"time"
 	"os"
@@ -27,14 +26,14 @@ type (
 )
 
 func main() {
-	log.SetFlags(log.Flags() &^ (log.Ldate | log.Ltime))
-
 	if len(os.Args) > 1 {
 		line = os.Args[1]
 	} else {
-		log.Printf("no input")
+		wrl("no input")
 		return
 	}
+
+	readConf()
 
 	client := &http.Client{
 		Timeout: time.Second * 10,
@@ -51,14 +50,14 @@ func main() {
 	body, err := io.ReadAll(resp.Body)
 	hanFrr(err)
 
-	log.Println(string(body))
+	wrl(string(body))
 
 	defer resp.Body.Close()
 }
 
-func readConf(what string) string {
+func readConf(what string) {
 	homeDir, err := os.UserHomeDir()
-	hanFerr(err)
+	hanFrr(err)
 
 	confDir = homeDir + confDir
 	confPath = confDir + confPath
@@ -71,7 +70,7 @@ func readConf(what string) string {
 	}
 
 	var conf Config
-	_, err := toml.DecodeFile(confPath, &conf)
+	_, err = toml.DecodeFile(confPath, &conf)
 	hanFrr(err)
 
 	url = conf.Addr
