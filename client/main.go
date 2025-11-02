@@ -80,7 +80,7 @@ func readConf() {
 	url = conf.Server.Addr
 	if url == "https://example.com/" {
 		wserr("\033[31m..you don't appear to " + 
-						"have configured the address" + 
+						"have configured the address " + 
 						"for your server\033[0m")
 		fserr("....see \033[32m-h\033[0m")
 	} else if url == "" {
