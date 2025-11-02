@@ -3,7 +3,18 @@
 >[!WARNING]
 >This was made specifically for my usecase. I am only open-sourcing this in case it benefits anyone else
 
-Short story long: This is a simple HTTP server and client written in Go that only excepts `POST` requests. It then takes the body of the post request and appends it to the end of a markdown file with a path matching the current date (ex: `2025/10/21.md` for the 21st of October in 2025). This is purely made to serve my usecase.
+This is purely made to serve my usecase.
+
+### How it works
+Short story long:
+- This is a simple HTTP server and client written in Go that only excepts `POST` requests.
+- It then takes the body of the post request and appends it to the end of a markdown file
+- Then it writes the markdown file to a path with the current date
+    (eg: `2025/10/21.md` for the 21st of October in 2025).
+
+Short story shorter:
+- Recieve POST request
+- Write the body of request to a file
 
 ---
 
