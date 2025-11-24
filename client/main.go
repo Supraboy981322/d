@@ -13,6 +13,7 @@ import (
 var (
 	url string   //set later when read conf
 	line string
+	timeout int
 
 	//changes to actual path
 	confDir = "/.config/Supraboy981322/d"
@@ -27,6 +28,7 @@ type (
 		Addr string `toml:"address"`
 	}
 	Config struct {
+		Timeout int `toml:"timeout"`
 		Server ServerConfig
 	}
 )
@@ -37,7 +39,7 @@ func main() {
 	
 	//chk args
 	if len(os.Args) > 1 {
-		line = os.Args[1]
+		line = strings.Join(os.Args[1:], " ")
 	} else {
 		wrl("no input")
 		return
@@ -46,7 +48,7 @@ func main() {
 	//create http client
 	//  timeout after 10 seconds
 	client := &http.Client{
-		Timeout: time.Second * 10,
+		Timeout: time.Second * time.Duration(timeout),
 	}
 
 	//create req
@@ -102,6 +104,9 @@ func readConf() {
 	
 	//set url from conf
 	url = conf.Server.Addr
+
+	timeout = conf.Timeout
+
 	//blame user for all other problems
 	if url == "https://example.com/" {
 		wserr("\033[31m..you don't appear to " + 
