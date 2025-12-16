@@ -55,3 +55,10 @@ Short story shorter:
   [server]
   address = "https://your.server.address/"
   ```
+
+- Ensure that GOBIN (the directory used by `go install`) is in your `$PATH`
+
+  eg: Bash with `.bashrc`
+  ```sh
+  printf "PATH=$PATH:$HOME/go/bin\n" | tee -a ~/.bashrc
+  ```
