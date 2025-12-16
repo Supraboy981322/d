@@ -20,20 +20,22 @@ Short story shorter:
 ## Installation:
 
 ### Server 
-- Download the repo
-- Compile the server
-  (make sure you're in the root directory of the repo):
-  ```go
-  go build .
+
+- Use Go's built-in installer (requires `git`)
+  ```sh
+  go install github.com/Supraboy981322/d/src/dServer@latest
   ```
-- Create a systemd service
+
+- Check the path the server binary was installed to (usually `~/go/bin/dServer`)
+
+- Create a systemd service (replace `/home/username/go/bin/dServer` with your install path, and `/your/library/dir` with the path to your library)
   ```service
   [Unit]
   Description=post request diary server
   After=network.target
   
   [Service]
-  ExecStart=/your/server/dir/d
+  ExecStart=/home/username/go/bin/dServer
   WorkingDirectory=/your/library/dir
   Restart=always
   
@@ -42,31 +44,14 @@ Short story shorter:
   ```
 
 ### Client
-- In order to download the client binary from your server (optional, but recommended):
-  - Compile the client binary
-    ```sh
-    cd client && go build .
-    ```
-  - Move the client binary to your library dir (and rename it to `dClient` 
-    ```sh
-    mv d /your/library/dir/dClient
-    ```
-  - Download binary from server
-    ```sh
-    wget https://your.server.address:8008/d
-    ```
-- Move the `d` client to a location in your path:
-  
-    eg: `/usr/bin`
-    ```sh
-    mv d /usr/bin
-    ```
-- Make the binary executable (may need `su`):
-    ```sh
-    chmod a+x d
-    ```
+
+- Using Go's built-in installer
+  ```sh
+  go install github.com/Supraboy981322/d/src/d@latest
+  ```
+
 - Put your `d` server address in your config:
-    ```toml
-    [server]
-    address = "https://your.server.address/"
-    ```
+  ```toml
+  [server]
+  address = "https://your.server.address/"
+  ```
