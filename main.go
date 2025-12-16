@@ -71,19 +71,17 @@ func post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	curTime := time.Now()                   //get time, then use to get:
-	year := curTime.Year()                  //  year
-	month := curTime.Month()                //  month
-	day := curTime.Day()                    //  day
-	hour := curTime.Hour()                  //  hour
-	minute := curTime.Minute()              //  minute
-	second := curTime.Second()              //  second
+	curTimeR := time.Now()                  //get current time then
+	curTime := curTimeR.Format("15:04:05")  //  set the format
+	month := curTimeR.Month()
+	day := curTimeR.Day()
+	year := curTimeR.Year()
 	fileDir := fmt.Sprintf("%d/%s",         //construct file dir from 
 		year, month)                          //  eg: 2025/November
 	filePath := fmt.Sprintf("%s/%d.md",     //construct filepath
 		fileDir, day)                         //  eg: 2025/November/2.md
-	line := fmt.Sprintf("`%d:%d:%d` - %s\n",//construct the line
-		hour, minute, second, body)           //  eg: `9:27:34` - foo
+	line := fmt.Sprintf("`%s` - %s\n",//construct the line
+		curTime, string(body))                        //  eg: `9:27:34` - foo
 	wrl(filePath + ":")                     //log the filepath
 	wrl("  " + line)                        //log the line
 
