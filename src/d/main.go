@@ -42,7 +42,7 @@ func main() {
 	if len(os.Args) > 1 {
 		line = strings.Join(os.Args[1:], " ")
 	} else {
-		wrl("no input")
+		wrl("\033[1;31mno input\033[0m")
 		return
 	}
 	
@@ -97,7 +97,7 @@ func main() {
 	hanFrr(err)
 
 	//print resp
-	wrl(string(body))
+	wrl("\033[1;32m" + string(body) + "\033[0m")
 
 	//why do I have to call this fn?
 	//  it's literally the last thing done

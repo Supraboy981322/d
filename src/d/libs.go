@@ -29,7 +29,7 @@ func wrl(str string) {
 
 //just print err
 func werr(err error) {
-	os.Stderr.WriteString("" + err.Error() + "\n")
+	os.Stderr.WriteString("\033[1;31m" + err.Error() + "\033[0m\n")
 }
 
 //just print err from str
