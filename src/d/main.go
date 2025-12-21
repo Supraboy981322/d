@@ -6,6 +6,7 @@ import (
 	"time"
 	"os"
 	"io"
+	"fmt"
 
 	"github.com/BurntSushi/toml"
 )
@@ -45,6 +46,32 @@ func main() {
 		return
 	}
 	
+	//for output formating
+	fmt.Print("\n")
+	
+	//channel to send quit msg
+	quitProg := make(chan bool)
+	go func(){ //activity spinner
+		progIcn := []rune{'⠻','⠽','⠾','⠷','⠯','⠟',}
+		for i := 0;; i++ {
+			//reset index to 0
+			if i >= len(progIcn) { i = 0 }
+			select { //handle channel comms.
+       case <- quitProg:
+				//move cursor up one line and
+				//  clear it before returning
+				fmt.Printf("\033[A\033[2K\033[0m")
+				return
+	     default:
+				//ansii code to manipulate cursor and use color
+				fmt.Printf("\033[A\033[2K\033[1;34m %s\033[0;1m "+
+							"Making request...\033[0m\n", string(progIcn[i]))
+				//wait 100 milliseconds (looks nicer)
+				time.Sleep(100 * time.Millisecond)
+			}
+		}
+	}()
+
 	//create http client
 	//  timeout after 10 seconds
 	client := &http.Client{
@@ -62,6 +89,8 @@ func main() {
 	//mk req
 	resp, err := client.Do(req)
 	hanFrr(err)
+
+	quitProg <- true
 
 	//read resp 
 	body, err := io.ReadAll(resp.Body)
