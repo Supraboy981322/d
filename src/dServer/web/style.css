@@ -1,0 +1,30 @@
+* { all: unset; }
+
+:root, body {
+  padding: 0;
+  margin: 0;
+}
+
+script, head { display: none; }
+
+#page_container {
+  width: 100vw;
+  height: 100vh;
+  &> #board {
+    height: 99vh;
+    width: 100vw;
+    &>input.msg_box {
+      bottom: 0;
+      width: 95vw;
+      padding: 1em;
+      display: block;
+      margin: 0 auto;
+      position: sticky;
+      border-radius: 1em;
+      background-color: #333;
+      border: solid 0.1em #777;
+      margin-top: calc(100vh - 5em);
+    }
+  }
+}
+

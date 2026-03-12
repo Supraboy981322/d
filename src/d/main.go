@@ -80,7 +80,7 @@ func main() {
 
 	//create req
 	req, err := http.NewRequest(
-		"POST", url, strings.NewReader(line))
+		"POST", url+"post", strings.NewReader(line))
 	hanFrr(err)
 
 	//set header (not needed, but just to be safe)

@@ -4,18 +4,27 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	_"embed"
 	"time"
 	"io/ioutil"
 	"io"
 )
 
+//go:embed web_built/amalgamation.html
+var web_spa []byte
+
 func main() {
 	wrl("starting \033[32md\033[0m...")
 	http.HandleFunc("/d", serveClient)
-	http.HandleFunc("/", post)
+	http.HandleFunc("/post", post)
+	http.HandleFunc("/", web_ui)
 	
 	wrl("started.")
 	ferr(http.ListenAndServe(":8008", nil))
+}
+
+func web_ui(w http.ResponseWriter, r *http.Request) {
+	w.Write(web_spa)
 }
 
 func serveClient(w http.ResponseWriter, r *http.Request) {
