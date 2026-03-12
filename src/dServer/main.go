@@ -7,24 +7,93 @@ import (
 	_"embed"
 	"time"
 	"io/ioutil"
+	"strconv"
 	"io"
+	"strings"
+	"encoding/json"
 )
 
 //go:embed web_built/amalgamation.html
 var web_spa []byte
 
+type Msg struct {
+	Timestamp string
+	Msg string
+}
+var (
+	todays_lines []Msg
+	today int
+)
+
 func main() {
+	todays_lines = []Msg{}
+	today = time.Now().Day()
+
+	go time_tracker()
+
 	wrl("starting \033[32md\033[0m...")
 	http.HandleFunc("/d", serveClient)
 	http.HandleFunc("/post", post)
+	http.HandleFunc("/today", send_today)
+	http.HandleFunc("/sync", send_new)
 	http.HandleFunc("/", web_ui)
 	
 	wrl("started.")
 	ferr(http.ListenAndServe(":8008", nil))
 }
 
+func time_tracker() {
+	for {
+		if today != time.Now().Day() {
+			todays_lines = []Msg{}
+			today = time.Now().Day()
+		}
+		time.Sleep(1 * time.Second)
+	}
+}
+
 func web_ui(w http.ResponseWriter, r *http.Request) {
 	w.Write(web_spa)
+}
+
+func send_today(w http.ResponseWriter, r *http.Request) {
+	j, e := json.Marshal(todays_lines)
+	if e != nil {
+		http.Error(w, "failed to marshal into json: " + e.Error(), 500)
+		return
+	}
+	w.Write(j)
+}
+
+func send_new(w http.ResponseWriter, r *http.Request) {
+	has_str := r.Header.Get("have")
+	has, e := strconv.Atoi(has_str)
+	if e != nil {
+		err := strings.Split(e.Error(), ": ")
+		http.Error(w, "NaN: " + err[len(err)-1], 400)
+		return
+	}
+	if has >= len(todays_lines) {
+		A_TERNARY_WOULDVE_BEEN_GREAT := "ies"
+		A_TERNARY_WOULDVE_BEEN_GREAT_2 := "are"
+		if len(todays_lines) == 1 {
+			A_TERNARY_WOULDVE_BEEN_GREAT = "y"
+			A_TERNARY_WOULDVE_BEEN_GREAT_2 = "is"
+		}
+		msg := fmt.Sprintf(
+			"there %s only %d entr%s",
+			A_TERNARY_WOULDVE_BEEN_GREAT_2, len(todays_lines),
+			A_TERNARY_WOULDVE_BEEN_GREAT,
+		)
+		http.Error(w, msg, 403)
+		return
+	}
+	j, e := json.Marshal(todays_lines[has:])
+	if e != nil {
+		http.Error(w, "failed to marshal into json: " + e.Error(), 500)
+		return
+	}
+	w.Write(j)
 }
 
 func serveClient(w http.ResponseWriter, r *http.Request) {
@@ -85,12 +154,18 @@ func post(w http.ResponseWriter, r *http.Request) {
 	month := curTimeR.Month()               //get the month (file dir)
 	day := curTimeR.Day()                   //get the day (filename)
 	year := curTimeR.Year()                 //get the year (file dir)
-	fileDir := fmt.Sprintf("%d/%s",         //construct file dir from 
-		year, month)                          //  eg: 2025/November
-	filePath := fmt.Sprintf("%s/%d.md",     //construct filepath
-		fileDir, day)                         //  eg: 2025/November/2.md
-	line := fmt.Sprintf("`%s` - %s\n",//construct the line
-		curTime, string(body))                //  eg: `9:27:34` - foo
+	fileDir := fmt.Sprintf(                 //construct file dir from 
+		"%d/%s",                              //  eg: 2025/November
+		year, month,                          //
+	)                                       //
+	filePath := fmt.Sprintf(                //construct filepath
+		"%s/%d.md",                           //  eg: 2025/November/2.md
+		fileDir, day,                         //
+	)                                       //
+	line := fmt.Sprintf(                    //construct the line
+		"`%s` - %s\n",                        //  eg: `9:27:34` - foo
+		curTime, string(body),                //
+	)                                       
 	wrl(filePath + ":")                     //log the filepath
 	wrl("  " + line)                        //log the line
 
@@ -105,8 +180,11 @@ func post(w http.ResponseWriter, r *http.Request) {
 	
 	//open file in append mode,
 	//  create if not exist
-	file, err := os.OpenFile(filePath,
-		os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0777)
+	file, err := os.OpenFile(
+		filePath,
+		os.O_APPEND|os.O_WRONLY|os.O_CREATE,
+		0777,
+	)
 	hanFrr(err)
 	//close file when fn ends 
 	defer file.Close()
@@ -118,4 +196,9 @@ func post(w http.ResponseWriter, r *http.Request) {
 	//finally, respond to client
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("recieved"))
+	new_line := Msg{
+		Timestamp: curTime,
+		Msg: string(body),
+	}
+	todays_lines = append(todays_lines, new_line)
 }
