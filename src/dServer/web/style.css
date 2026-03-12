@@ -3,6 +3,8 @@
 :root, body {
   padding: 0;
   margin: 0;
+  font-family: monospace;
+  font-size: 1.175em;
 }
 
 script, head { display: none; }
@@ -11,19 +13,37 @@ script, head { display: none; }
   width: 100vw;
   height: 100vh;
   &> #board {
-    height: 99vh;
-    width: 100vw;
+    width:100vw;
+    height: calc(100vh - 5em);
+    display: flex;
+    text-align: text-bottom;
+    flex-direction: column;
     &>input.msg_box {
-      bottom: 0;
+      background-color: #333;
+      border: 0.1em solid #777;
+      border-radius: 1em;
       width: 95vw;
+      box-sizing: border-box;
+      margin: calc(100vh - 5em) calc(5vw / 2) 2em;
       padding: 1em;
       display: block;
-      margin: 0 auto;
-      position: sticky;
-      border-radius: 1em;
-      background-color: #333;
-      border: solid 0.1em #777;
-      margin-top: calc(100vh - 5em);
+      position: absolute;
+      bottom: 0;
+      height: 3em;
+    }
+    &> div.container {
+      margin-top: auto; 
+      &> div.msg {
+        display: block;
+        margin: 1em;
+        &> p.timestamp { 
+          background-color: #999;
+          color: #000;
+          margin-right: 1em;
+          padding: 0.2em;
+          border-radius: 0.3em;
+        }
+      }
     }
   }
 }
