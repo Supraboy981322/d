@@ -135,7 +135,7 @@ func sendReq(m model) tea.Cmd {
 	
 		//create req
 			req, err := http.NewRequest(
-			"POST", m.url, strings.NewReader(line))
+			"POST", m.url+"post", strings.NewReader(line))
 		if err != nil {
 			return quitErrMsg(merr("failed to create request\n", nil))
 		}
