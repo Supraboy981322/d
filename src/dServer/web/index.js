@@ -1,5 +1,6 @@
 const dom = document;
 const body = dom.body;
+const domain = window.location.origin;
 
 function construct() {
   let page_container = dom.createElement("div");
@@ -20,10 +21,23 @@ function construct() {
 }
 construct()
 
-function send(msg) {
+async function send(msg) {
   let input = dom.querySelector("#board > input.msg_box")
   if (msg === null || msg === undefined) msg = input.value;
   input.value = "";
+  console.log(msg);
+  let url = `${domain}/post`; 
+  try {
+    let resp = await fetch(url, {
+      method: "POST",
+      body: msg,
+    });
+    if (!resp.ok) throw new Error(`SERVER ERR: ${resp}`);
+    console.log(await resp.text());
+  } catch (e) {
+    console.error(e);
+    alert(e);
+  }
 }
 
 function new_msg_elm(msg) {
