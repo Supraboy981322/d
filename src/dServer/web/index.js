@@ -1,66 +1,67 @@
-const dom = document;
-const body = dom.body;
-const domain = window.location.origin;
-const do_scroll = true;
+"use strict";
+
+
+
+//I know some of the choices of syntax is (probably)
+//  a little strange, but a lot of it was done to optimize
+//    for compression size after minification
+
+
 
 function construct() {
-  body.innerHTML = "";
-
-  let page_container = dom.createElement("div");
-  body.appendChild(page_container);
+  let page_container = document.createElement("div");
+  document.body.appendChild(page_container);
   page_container.id = "p";
 
-  let board = dom.createElement("div");
+  let board = document.createElement("div");
   page_container.appendChild(board);
   board.id = "b";
 
-  let msg_container = dom.createElement("div");
+  let msg_container = document.createElement("div");
   board.appendChild(msg_container);
   msg_container.className = "c";
 
-  let msg_box = dom.createElement("input");
+  let msg_box = document.createElement("input");
   board.appendChild(msg_box);
-  msg_box.className = "m";
+  msg_box.className = "M";
   msg_box.type = "text";
-  msg_box.addEventListener("keydown", (event) => {
+  msg_box.addEventListener("keydown", event => {
     if (event.key === "Enter") send();
   });
 
-  let to_btm_btn = dom.createElement("button");
-  body.appendChild(to_btm_btn);
+  let to_btm_btn = document.createElement("button");
+  document.body.appendChild(to_btm_btn)
   to_btm_btn.id = "B";
   to_btm_btn.onclick = scroll;
   to_btm_btn.innerText = "▼";
 
   update_board();
 }
-construct()
+
+construct();
 
 async function send(msg) {
-  let input = dom.querySelector("#b > input.m")
+  let msg_box = document.querySelector(".M");
+  if (msg === undefined)
+    msg = msg_box.value;
 
-  if (msg === null || msg === undefined)
-    msg = input.value;
+  msg_box.value = "";
 
-  input.value = "";
   var msg_rendered;
-
   try {
-
-    let resp = await fetch(`${domain}/post`, {
+    let resp = await fetch(`${window.location.origin}/post`, {
       method: "POST",
       headers: { "echo": "HTML" },
       body: msg,
     });
 
     if (!resp.ok)
-      throw new Error(`SERVER ERR: ${resp}`);
+      throw new Error("SERVER ERR");
 
-    msg_rendered = (new DOMParser())
-          .parseFromString(await resp.text(), "text/html")
-          .querySelector("p")
-          .innerHTML;
-
+    let p = (new DOMParser())
+          .parseFromString(await resp.text(), "text/html");
+      t = p.querySelector("p");
+    msg_rendered = t === null ? p.body.innerHTML : t.innerHTML;
   } catch (e) {
     alert(e);
     return;
@@ -72,9 +73,7 @@ async function send(msg) {
     minute: "2-digit",
     second: "2-digit",
   }).format(
-    (
-      () => new Date( Date.now() )
-    )()
+      new Date( Date.now() )
   );
 
   new_msg_elem({
@@ -84,39 +83,39 @@ async function send(msg) {
 }
 
 async function update_board() {
-  let resp;
   try {
-    resp = await fetch(`${domain}/today`, {
+    let resp = await fetch(`${window.location.origin}/today`, {
       method: "GET",
     });
-    if (!resp.ok) throw new Error(`SERVER ERR: ${resp}`);
+    if (!resp.ok)
+      throw new Error("SERVER ERR");
+
+    let json = await resp.json();
+    json.forEach(msg => new_msg_elem(msg));
   } catch (e) {
     alert(e);
     return;
   }
-
-  let json = await resp.json();
-  json.forEach((msg) => new_msg_elem(msg));
 }
 
-function scroll() {
-  let board = dom.getElementById("b");
-  if (do_scroll)
-    board.scrollTop = board.scrollHeight; 
+function scroll(){
+  let board = document.querySelector("#b");
+  board.scrollTop = board.scrollHeight; 
 }
 
 function new_msg_elem(msg) {
-  let msg_container = dom.createElement("div");
-  dom.querySelector("#b > div.c").appendChild(msg_container);
+  let msg_board = document.querySelector(".c");
+  let msg_container = document.createElement("div");
+  msg_board.appendChild(msg_container);
   msg_container.id = msg.Timestamp;
   msg_container.className = "m";
 
-  let timestamp = dom.createElement("p");
+  let timestamp = document.createElement("p");
   msg_container.appendChild(timestamp);
   timestamp.className = "T";
   timestamp.innerText = msg.Timestamp;
 
-  let msg_txt = dom.createElement("p");
+  let msg_txt = document.createElement("p");
   msg_container.appendChild(msg_txt);
   msg_txt.className = "t";
   msg_txt.innerHTML = msg.Msg;

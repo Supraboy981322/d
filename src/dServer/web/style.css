@@ -42,7 +42,7 @@ script, head { display: none; }
     scroll-behavior: smooth;
     text-align: text-bottom;
     flex-direction: column;
-    &>input.m {
+    &>.M {
       background-color: #333;
       border: 0.1em solid #777;
       border-radius: 1em;
@@ -55,12 +55,12 @@ script, head { display: none; }
       bottom: 0;
       height: 3em;
     }
-    &> div.c {
+    &> .c {
       margin-top: auto; 
-      &> div.m {
+      &> .m {
         display: block;
         margin: 1em;
-        &> p.T { 
+        &> .T { 
           background-color: #999;
           color: #000;
           margin-right: 1em;
