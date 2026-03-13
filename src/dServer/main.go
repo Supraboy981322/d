@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"io"
 	"bytes"
+	"slices"
 	"strings"
 	"encoding/json"
 	"compress/gzip"
@@ -59,13 +60,24 @@ func time_tracker() {
 	}
 }
 
-func web_ui(w http.ResponseWriter, r *http.Request) {
-	picked_idx := -1
-	for i, enc := range strings.Split(r.Header.Get("Accept-Encoding"), ",") {
-		if picked_idx < idx_of_str(compression_priority, strings.TrimSpace(enc)) {
-			picked_idx = i
+func compress(w http.ResponseWriter, r *http.Request, og []byte) ([]byte, error) {
+	picked_idx := -1 
+	{
+		accepted := r.Header.Get("Accept-Encoding")
+
+		//new slice without any whitespace
+		accepted_trimmed := []string{}
+		for _, thing := range strings.Split(accepted, ",") {
+			accepted_trimmed = append(accepted_trimmed, strings.TrimSpace(thing))
+		}
+
+		loop: for i, enc := range compression_priority {
+			if slices.Contains(accepted_trimmed, enc) {
+				picked_idx = i; break loop
+			}
 		}
 	}
+
 	//could've been a simple ternary
 	var picked_name string
 	if picked_idx > -1 { 
@@ -73,38 +85,44 @@ func web_ui(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var page bytes.Buffer
-	var length int
-	if picked_idx < 0 { page.Write(web_spa) } else {
+	if picked_idx < 0 { page.Write(og) } else {
 		var e error
 		switch picked_name {
-			case "gzip", "gz":
+			case "gzip", "gz": {
 				wr := gzip.NewWriter(&page)
-				length, e = wr.Write(web_spa)
+				_, e = wr.Write(web_spa)
 				wr.Flush()
 				goto err
-		  case "brotli", "br":
+			}
+		  case "brotli", "br": {
 				opts := brotli.WriterOptions {
 					Quality: 11,
 					LGWin: 0,
 				}
 				wr := brotli.NewWriter(&page, opts)
-				length, e = wr.Write(web_spa)
+				_, e = wr.Write(web_spa)
 				wr.Flush()
 				goto err
+			}
 			default:
 				panic("unknown compression picked: " + picked_name)
 		}
 		err: if e != nil {
 			http.Error(w, "failed to compress: " + e.Error(), 500)
-			return
+			return nil, e
 		}
 	}
 
-	if length == 0 { length = len(page.Bytes()) } 
-
 	w.Header().Set("Content-Encoding", picked_name)
-	w.Header().Set("Content-Length", strconv.Itoa(length))
-	w.Write(page.Bytes())
+	return page.Bytes(), nil
+}
+
+func web_ui(w http.ResponseWriter, r *http.Request) {
+	page, e := compress(w, r, web_spa)
+	if e != nil { return } //handled by compressor
+
+	w.Header().Set("Content-Length", strconv.Itoa(len(page)))
+	w.Write(page)
 }
 
 func send_today(w http.ResponseWriter, r *http.Request) {
@@ -113,6 +131,7 @@ func send_today(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to marshal into json: " + e.Error(), 500)
 		return
 	}
+	w.Header().Set("Content-Type", "text/json")
 	w.Write(j)
 }
 
@@ -144,6 +163,7 @@ func send_new(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to marshal into json: " + e.Error(), 500)
 		return
 	}
+	w.Header().Set("Content-Type", "text/json")
 	w.Write(j)
 }
 

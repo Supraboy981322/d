@@ -1,14 +1,8 @@
-/*These fns are for me to save time writing
- *  this, as I find writing `fmt.Println(...)`
- *  (or the `log`/`slog` equivalent) and 
- *  `if err != nil {...}` extremely time
- *  consuming and I'd rather spend that time
- *  writing functionality or doing homework */
-
 package main
 
 import (
 	"os"
+	"strconv"
 	"errors"
 )
 
@@ -72,8 +66,10 @@ func merr(str string, err error) {
 func idx_of_str(haystack []string, needle string) int {
 	for i, thing :=  range haystack {
 		if thing == needle {
+			wrl("\033[32m" + needle + "\033[0m (" + strconv.Itoa(i) + ")")
 			return i
 		}
 	}
 	return -1
 }
+
