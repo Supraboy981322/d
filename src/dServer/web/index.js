@@ -38,14 +38,29 @@ construct()
 
 async function send(msg) {
   let input = dom.querySelector("#board > input.msg_box")
-  if (msg === null || msg === undefined) msg = input.value;
+
+  if (msg === null || msg === undefined)
+    msg = input.value;
+
   input.value = "";
+  var msg_rendered;
+
   try {
+
     let resp = await fetch(`${domain}/post`, {
       method: "POST",
+      headers: { "echo": "HTML" },
       body: msg,
     });
-    if (!resp.ok) throw new Error(`SERVER ERR: ${resp}`);
+
+    if (!resp.ok)
+      throw new Error(`SERVER ERR: ${resp}`);
+
+    msg_rendered = (new DOMParser())
+          .parseFromString(await resp.text(), "text/html")
+          .querySelector("p")
+          .innerHTML;
+
   } catch (e) {
     alert(e);
     return;
@@ -64,7 +79,7 @@ async function send(msg) {
 
   new_msg_elem({
     Timestamp: timestamp,
-    Msg: msg,
+    Msg: msg_rendered,
   });
 }
 
@@ -104,6 +119,6 @@ function new_msg_elem(msg) {
   let msg_txt = dom.createElement("p");
   msg_container.appendChild(msg_txt);
   msg_txt.className = "txt";
-  msg_txt.innerText = msg.Msg;
+  msg_txt.innerHTML = msg.Msg;
   scroll()
 }
