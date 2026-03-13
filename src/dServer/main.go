@@ -15,6 +15,7 @@ import (
 	"strings"
 	"encoding/json"
 	"compress/gzip"
+	"github.com/yuin/goldmark"
 	brotli "github.com/google/brotli/go/cbrotli"
 )
 
@@ -25,6 +26,8 @@ type Msg struct {
 	Timestamp string
 	Msg string
 }
+
+
 var (
 	todays_lines []Msg
 	today int
@@ -33,6 +36,14 @@ var (
 		"gzip", "gz",
 	}
 )
+
+
+func render_md(src []byte) ([]byte, error) {
+	var b bytes.Buffer
+	e := goldmark.Convert(src, &b)
+	if e != nil { return nil, e }
+	return b.Bytes(), nil
+}
 
 func main() {
 	goto start
@@ -121,7 +132,7 @@ func compress(w http.ResponseWriter, r *http.Request, og []byte) ([]byte, error)
 
 	//could've been a simple ternary
 	var picked_name string
-	if picked_idx > -1 { 
+	if picked_idx > -1 {
 		picked_name = compression_priority[picked_idx];
 	}
 
@@ -310,12 +321,27 @@ func post(w http.ResponseWriter, r *http.Request) {
 	_, err = file.WriteString(line)
 	hanFrr(err)
 
+	rendered, e := render_md(body)
+	if e != nil {
+		http.Error(w, "failed to render markdown", 500)
+		return
+	}
+
+	var resp []byte
+	if r.Header.Get("echo") == "HTML" {
+		resp = rendered
+	} else {
+		resp = []byte("recieved")
+	}
+
 	//finally, respond to client
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("recieved"))
+	w.Write(resp)
+
 	new_line := Msg{
 		Timestamp: curTime,
-		Msg: string(body),
+		Msg: string(rendered),
 	}
+
 	todays_lines = append(todays_lines, new_line)
 }
