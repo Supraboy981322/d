@@ -9,7 +9,7 @@
 
 script, head { display: none; }
 
-#to_btm {
+#B {
   right: 0;
   bottom: 0;
   width: 2.5ch;
@@ -29,10 +29,10 @@ script, head { display: none; }
   user-select: none;
 }
 
-#page_container {
+#p {
   width: 100vw;
   height: 100vh;
-  &> #board {
+  &> #b {
     width:100vw;
     padding-bottom: 5em;
     overflow-y: scroll;
@@ -42,7 +42,7 @@ script, head { display: none; }
     scroll-behavior: smooth;
     text-align: text-bottom;
     flex-direction: column;
-    &>input.msg_box {
+    &>input.m {
       background-color: #333;
       border: 0.1em solid #777;
       border-radius: 1em;
@@ -55,12 +55,12 @@ script, head { display: none; }
       bottom: 0;
       height: 3em;
     }
-    &> div.container {
+    &> div.c {
       margin-top: auto; 
-      &> div.msg {
+      &> div.m {
         display: block;
         margin: 1em;
-        &> p.timestamp { 
+        &> p.T { 
           background-color: #999;
           color: #000;
           margin-right: 1em;

@@ -8,19 +8,19 @@ function construct() {
 
   let page_container = dom.createElement("div");
   body.appendChild(page_container);
-  page_container.id = "page_container";
+  page_container.id = "p";
 
   let board = dom.createElement("div");
   page_container.appendChild(board);
-  board.id = "board";
+  board.id = "b";
 
   let msg_container = dom.createElement("div");
   board.appendChild(msg_container);
-  msg_container.className = "container";
+  msg_container.className = "c";
 
   let msg_box = dom.createElement("input");
   board.appendChild(msg_box);
-  msg_box.className = "msg_box";
+  msg_box.className = "m";
   msg_box.type = "text";
   msg_box.addEventListener("keydown", (event) => {
     if (event.key === "Enter") send();
@@ -28,16 +28,16 @@ function construct() {
 
   let to_btm_btn = dom.createElement("button");
   body.appendChild(to_btm_btn);
-  to_btm_btn.id = "to_btm";
+  to_btm_btn.id = "B";
   to_btm_btn.onclick = scroll;
-  to_btm.innerText = "▼";
+  to_btm_btn.innerText = "▼";
 
   update_board();
 }
 construct()
 
 async function send(msg) {
-  let input = dom.querySelector("#board > input.msg_box")
+  let input = dom.querySelector("#b > input.m")
 
   if (msg === null || msg === undefined)
     msg = input.value;
@@ -100,25 +100,25 @@ async function update_board() {
 }
 
 function scroll() {
-  let board = dom.getElementById("board");
+  let board = dom.getElementById("b");
   if (do_scroll)
     board.scrollTop = board.scrollHeight; 
 }
 
 function new_msg_elem(msg) {
   let msg_container = dom.createElement("div");
-  dom.querySelector("#board > .container").appendChild(msg_container);
+  dom.querySelector("#b > div.c").appendChild(msg_container);
   msg_container.id = msg.Timestamp;
-  msg_container.className = "msg";
+  msg_container.className = "m";
 
   let timestamp = dom.createElement("p");
   msg_container.appendChild(timestamp);
-  timestamp.className = "timestamp";
+  timestamp.className = "T";
   timestamp.innerText = msg.Timestamp;
 
   let msg_txt = dom.createElement("p");
   msg_container.appendChild(msg_txt);
-  msg_txt.className = "txt";
+  msg_txt.className = "t";
   msg_txt.innerHTML = msg.Msg;
   scroll()
 }
