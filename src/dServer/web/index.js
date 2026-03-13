@@ -37,8 +37,6 @@ function construct() {
 construct()
 
 async function send(msg) {
-  const d = new Date();
-  let timestamp = `${d.getHours()}:${d.getMinutes()}:${d.getSeconds()}`;
   let input = dom.querySelector("#board > input.msg_box")
   if (msg === null || msg === undefined) msg = input.value;
   input.value = "";
@@ -52,6 +50,18 @@ async function send(msg) {
     alert(e);
     return;
   }
+
+  //yikes, that's a lot of bytes just to get the time
+  let timestamp = new Intl.DateTimeFormat("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).format(
+    (
+      () => new Date( Date.now() )
+    )()
+  );
+
   new_msg_elem({
     Timestamp: timestamp,
     Msg: msg,
@@ -97,5 +107,3 @@ function new_msg_elem(msg) {
   msg_txt.innerText = msg.Msg;
   scroll()
 }
-
-//setInterval(scroll, 100)
