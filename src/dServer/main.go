@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"strconv"
 	"io"
+	"bytes"
 	"strings"
 	"encoding/json"
 	"compress/gzip"
@@ -65,22 +66,45 @@ func web_ui(w http.ResponseWriter, r *http.Request) {
 			picked_idx = i
 		}
 	}
-	var wr io.Writer
-	if picked_idx == -1 { wr = w } else {
-		switch compression_priority[picked_idx] {
-			case "gzip", "gz": wr = gzip.NewWriter(w)
+	//could've been a simple ternary
+	var picked_name string
+	if picked_idx > -1 { 
+		picked_name = compression_priority[picked_idx];
+	}
+
+	var page bytes.Buffer
+	var length int
+	if picked_idx < 0 { page.Write(web_spa) } else {
+		var e error
+		switch picked_name {
+			case "gzip", "gz":
+				wr := gzip.NewWriter(&page)
+				length, e = wr.Write(web_spa)
+				wr.Flush()
+				goto err
 		  case "brotli", "br":
 				opts := brotli.WriterOptions {
 					Quality: 11,
 					LGWin: 0,
 				}
-				wr = brotli.NewWriter(w, opts)
+				wr := brotli.NewWriter(&page, opts)
+				length, e = wr.Write(web_spa)
+				wr.Flush()
+				goto err
 			default:
-				panic("unknown compression type: " + compression_priority[picked_idx])
+				panic("unknown compression picked: " + picked_name)
+		}
+		err: if e != nil {
+			http.Error(w, "failed to compress: " + e.Error(), 500)
+			return
 		}
 	}
-	w.Header().Set("Content-Length", strconv.Itoa(len(web_spa)))
-	wr.Write(web_spa)
+
+	if length == 0 { length = len(page.Bytes()) } 
+
+	w.Header().Set("Content-Encoding", picked_name)
+	w.Header().Set("Content-Length", strconv.Itoa(length))
+	w.Write(page.Bytes())
 }
 
 func send_today(w http.ResponseWriter, r *http.Request) {
