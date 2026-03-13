@@ -1,6 +1,7 @@
 const dom = document;
 const body = dom.body;
 const domain = window.location.origin;
+const do_scroll = true;
 
 function construct() {
   body.innerHTML = "";
@@ -25,6 +26,12 @@ function construct() {
     if (event.key === "Enter") send();
   });
 
+  let to_btm_btn = dom.createElement("button");
+  body.appendChild(to_btm_btn);
+  to_btm_btn.id = "to_btm";
+  to_btm_btn.onclick = scroll;
+  to_btm.innerText = "▼";
+
   update_board();
 }
 construct()
@@ -35,16 +42,13 @@ async function send(msg) {
   let input = dom.querySelector("#board > input.msg_box")
   if (msg === null || msg === undefined) msg = input.value;
   input.value = "";
-  console.log(msg);
   try {
     let resp = await fetch(`${domain}/post`, {
       method: "POST",
       body: msg,
     });
     if (!resp.ok) throw new Error(`SERVER ERR: ${resp}`);
-    console.log(await resp.text());
   } catch (e) {
-    console.error(e);
     alert(e);
     return;
   }
@@ -62,13 +66,18 @@ async function update_board() {
     });
     if (!resp.ok) throw new Error(`SERVER ERR: ${resp}`);
   } catch (e) {
-    console.error(e);
     alert(e);
     return;
   }
 
   let json = await resp.json();
   json.forEach((msg) => new_msg_elem(msg));
+}
+
+function scroll() {
+  let board = dom.getElementById("board");
+  if (do_scroll)
+    board.scrollTop = board.scrollHeight; 
 }
 
 function new_msg_elem(msg) {
@@ -86,4 +95,7 @@ function new_msg_elem(msg) {
   msg_container.appendChild(msg_txt);
   msg_txt.className = "txt";
   msg_txt.innerText = msg.Msg;
+  scroll()
 }
+
+//setInterval(scroll, 100)
