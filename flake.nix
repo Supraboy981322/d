@@ -15,14 +15,14 @@
           pname = "dServer";
           version = "0.0.0";
           src = ./src/dServer;
-          vendorSha256 = pkgs.lib.fakeHash;
+          vendorHash = pkgs.lib.fakeHash;
         };
 
         client = pkgs.buildGoModule {
           pname = "d";
           version = "0.0.0";
           src = ./src/dServer;
-          vendorSha256 = pkgs.lib.fakeHash;
+          vendorHash = pkgs.lib.fakeHash;
 
           nativeBuildInputs = with pkgs; [
             pkg-config
@@ -74,7 +74,7 @@
           };
         };
         config = lib.mkIf config.services.dServer.enable { 
-          services.dServer.package = lib.mkDefault self.package.${pkgs.system}.server;
+          services.dServer.package = lib.mkDefault self.packages.${pkgs.system}.server;
           systemd.services.dServer = {
             description = "dServer instance";
             wantedBy = [ "multi-user.target" ];
