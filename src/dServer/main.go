@@ -90,7 +90,7 @@ func compress(w http.ResponseWriter, r *http.Request, og []byte) ([]byte, error)
 		switch picked_name {
 			case "gzip", "gz": {
 				wr := gzip.NewWriter(&page)
-				_, e = wr.Write(web_spa)
+				_, e = wr.Write(og)
 				wr.Flush()
 				goto err
 			}
@@ -100,7 +100,7 @@ func compress(w http.ResponseWriter, r *http.Request, og []byte) ([]byte, error)
 					LGWin: 0,
 				}
 				wr := brotli.NewWriter(&page, opts)
-				_, e = wr.Write(web_spa)
+				_, e = wr.Write(og)
 				wr.Flush()
 				goto err
 			}
@@ -131,8 +131,10 @@ func send_today(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to marshal into json: " + e.Error(), 500)
 		return
 	}
+	json_compressed, e := compress(w, r, j)
+	if e != nil { return }
 	w.Header().Set("Content-Type", "text/json")
-	w.Write(j)
+	w.Write(json_compressed)
 }
 
 func send_new(w http.ResponseWriter, r *http.Request) {
@@ -163,8 +165,11 @@ func send_new(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to marshal into json: " + e.Error(), 500)
 		return
 	}
+
+	json_compressed, e := compress(w, r, j)
+	if e != nil { return }
 	w.Header().Set("Content-Type", "text/json")
-	w.Write(j)
+	w.Write(json_compressed)
 }
 
 func serveClient(w http.ResponseWriter, r *http.Request) {
