@@ -11,6 +11,8 @@ import (
 	"io"
 	"strings"
 	"encoding/json"
+	"compress/gzip"
+	brotli "github.com/google/brotli/go/cbrotli"
 )
 
 //go:embed web_built/amalgamation.html
@@ -23,6 +25,10 @@ type Msg struct {
 var (
 	todays_lines []Msg
 	today int
+	compression_priority = []string {
+		"brotli", "br",
+		"gzip", "gz",
+	}
 )
 
 func main() {
@@ -53,7 +59,28 @@ func time_tracker() {
 }
 
 func web_ui(w http.ResponseWriter, r *http.Request) {
-	w.Write(web_spa)
+	picked_idx := -1
+	for i, enc := range strings.Split(r.Header.Get("Accept-Encoding"), ",") {
+		if picked_idx < idx_of_str(compression_priority, strings.TrimSpace(enc)) {
+			picked_idx = i
+		}
+	}
+	var wr io.Writer
+	if picked_idx == -1 { wr = w } else {
+		switch compression_priority[picked_idx] {
+			case "gzip", "gz": wr = gzip.NewWriter(w)
+		  case "brotli", "br":
+				opts := brotli.WriterOptions {
+					Quality: 11,
+					LGWin: 0,
+				}
+				wr = brotli.NewWriter(w, opts)
+			default:
+				panic("unknown compression type: " + compression_priority[picked_idx])
+		}
+	}
+	w.Header().Set("Content-Length", strconv.Itoa(len(web_spa)))
+	wr.Write(web_spa)
 }
 
 func send_today(w http.ResponseWriter, r *http.Request) {

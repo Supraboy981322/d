@@ -68,3 +68,12 @@ func merr(str string, err error) {
 	eror := errors.New(erorStr)
 	werr(eror)
 }
+
+func idx_of_str(haystack []string, needle string) int {
+	for i, thing :=  range haystack {
+		if thing == needle {
+			return i
+		}
+	}
+	return -1
+}

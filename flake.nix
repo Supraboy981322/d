@@ -37,13 +37,32 @@
           default = client;
         };
 
-        devShells.default = pkgs.mkShell {
-          buildInputs = with pkgs; [
-            go
-            brotli
-            pkg-config
-          ];
-        };
+        devShells.default = pkgs.mkShell (
+          let
+            libs = with pkgs; [
+              go
+              brotli
+              pkg-config
+
+
+              bun # exclusively for minifying the web ui
+            ];
+          in { 
+          buildInputs = libs;
+          packages = libs;
+          shellHook = ''
+            REPO_ROOT="$(git rev-parse --show-toplevel)"
+            run() (
+              set -eou pipefail
+              old_dir="$PWD"
+              cd "$REPO_ROOT/src/dServer/web"
+              bun run build.ts || exit
+              cd ..
+              go run . || true
+              cd $old_dir
+            )
+          '';
+        });
       })
     ) // {
       nixosModules.default = { config, lib, pkgs, ... }: {
