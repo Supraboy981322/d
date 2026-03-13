@@ -70,15 +70,16 @@
           enable = lib.mkEnableOption "dServer";
           package = lib.mkOption {
             type = lib.types.package;
-            default = self.packages.${pkgs.system}.server;
+            description = "dServer server package";
           };
         };
         config = lib.mkIf config.services.dServer.enable { 
+          services.dServer.package = lib.mkDefault self.package.${pkgs.system}.server;
           systemd.services.dServer = {
             description = "dServer instance";
             wantedBy = [ "multi-user.target" ];
             serviceConfig = {
-              ExecStart = "${config.services.dServer.package}/bin/server";
+              ExecStart = "${config.services.dServer.package}/bin/dServer";
               Restart = "always";
             };
           };
