@@ -321,15 +321,16 @@ func post(w http.ResponseWriter, r *http.Request) {
 	_, err = file.WriteString(line)
 	hanFrr(err)
 
-	rendered, e := render_md(body)
+	rendered_raw, e := render_md(body)
 	if e != nil {
 		http.Error(w, "failed to render markdown", 500)
 		return
 	}
+	rendered := strings.TrimSpace(string(rendered_raw))
 
 	var resp []byte
 	if r.Header.Get("echo") == "HTML" {
-		resp = rendered
+		resp = []byte(rendered)
 	} else {
 		resp = []byte("recieved")
 	}
@@ -340,7 +341,7 @@ func post(w http.ResponseWriter, r *http.Request) {
 
 	new_line := Msg{
 		Timestamp: curTime,
-		Msg: string(rendered),
+		Msg: rendered,
 	}
 
 	todays_lines = append(todays_lines, new_line)
