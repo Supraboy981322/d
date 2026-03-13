@@ -52,12 +52,27 @@
           packages = libs;
           shellHook = ''
             REPO_ROOT="$(git rev-parse --show-toplevel)"
+            build() (
+              set -eou pipefail
+              old_dir="$PWD"
+              cd "$REPO_ROOT/src/dServer/web"
+              bun run build.ts || exit
+              cd ..
+              printf "uncompressed size: %d\n" "$(cat web_built/*.html | wc -c)"
+              printf "gzipped size: %d\n" "$(cat web_built/*.html | gzip -c9k | wc -c)"
+              printf "brotli size: %d\n" "$(cat web_built/*.html | brotli -cq 11 -w 24 | wc -c)"
+              go build || true
+              cd $old_dir
+            )
             run() (
               set -eou pipefail
               old_dir="$PWD"
               cd "$REPO_ROOT/src/dServer/web"
               bun run build.ts || exit
               cd ..
+              printf "uncompressed size: %d\n" "$(cat web_built/*.html | wc -c)"
+              printf "gzipped size: %d\n" "$(cat web_built/*.html | gzip -c9k | wc -c)"
+              printf "brotli size: %d\n" "$(cat web_built/*.html | brotli -cq 11 -w 24 | wc -c)"
               go run . || true
               cd $old_dir
             )
