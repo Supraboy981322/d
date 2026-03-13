@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"io"
 	"bytes"
+	"errors"
 	"slices"
 	"strings"
 	"encoding/json"
@@ -34,10 +35,41 @@ var (
 )
 
 func main() {
-	todays_lines = []Msg{}
-	today = time.Now().Day()
+	goto start
+	
+	err: {
+		fmt.Fprintln(os.Stderr, "startup err")
+		os.Exit(1)
+		panic("failed to fail")
+	}
 
-	go time_tracker()
+	start: {
+		todays_lines = []Msg{}
+		today = time.Now().Day()
+
+		j, e := os.ReadFile("scrollback.json")
+		if e != nil {
+			if errors.Is(e, os.ErrNotExist) {
+				e = os.WriteFile("scrollback.json", []byte{ '[', ']' }, 0644)
+				if e != nil {
+					fmt.Fprintf(os.Stderr, "failed to create scrollback.json: %v\n", e)
+					goto err
+				}
+				j = []byte{ '[', ']' }
+			} else {
+				fmt.Fprintf(os.Stderr, "failed to read scrollback.json: %v\n", e)
+				goto err
+			}
+		}
+
+		e = json.Unmarshal(j, &todays_lines)
+		if e != nil {
+			fmt.Fprintf(os.Stderr, "failed to unmarshall scrollback.json: %v\n", e)
+			goto err
+		}
+	}
+
+	go ticker()
 
 	wrl("starting \033[32md\033[0m...")
 	http.HandleFunc("/d", serveClient)
@@ -50,12 +82,21 @@ func main() {
 	ferr(http.ListenAndServe(":8008", nil))
 }
 
-func time_tracker() {
+func ticker() {
+	previous_length := len(todays_lines)
 	for {
 		if today != time.Now().Day() {
 			todays_lines = []Msg{}
 			today = time.Now().Day()
 		}
+		if len(todays_lines) != previous_length {
+			j, e := json.Marshal(todays_lines)
+			if e != nil { panic(e.Error()) }
+
+			e = os.WriteFile("scrollback.json", j, 0644)
+			if e != nil { panic(e.Error()) }
+		}
+		previous_length = len(todays_lines)
 		time.Sleep(1 * time.Second)
 	}
 }
