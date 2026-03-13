@@ -65,7 +65,7 @@
         });
       })
     ) // {
-      nixosModules.default = { config, lib, pkgs, ... }: {
+      nixosModules.default = { config, lib, ... }: {
         options.services.dServer = {
           enable = lib.mkEnableOption "dServer";
           package = lib.mkOption {
@@ -74,7 +74,7 @@
           };
         };
         config = lib.mkIf config.services.dServer.enable { 
-          services.dServer.package = lib.mkDefault self.packages.${pkgs.system}.server;
+          services.dServer.package = lib.mkDefault self.packages.${config.nixpkgs.system}.server;
           systemd.services.dServer = {
             description = "dServer instance";
             wantedBy = [ "multi-user.target" ];
