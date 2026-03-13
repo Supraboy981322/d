@@ -149,7 +149,7 @@ func compress(w http.ResponseWriter, r *http.Request, og []byte) ([]byte, error)
 		  case "brotli", "br": {
 				opts := brotli.WriterOptions {
 					Quality: 11,
-					LGWin: 0,
+					LGWin: 24,
 				}
 				wr := brotli.NewWriter(&page, opts)
 				_, e = wr.Write(og)
