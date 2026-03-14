@@ -9,6 +9,12 @@
 
 script, head { display: none; }
 
+code {
+  background-color: #555;
+  padding: 0 0.2em;
+  border-radius: 0.25em;
+}
+
 #B {
   right: 0;
   bottom: 0;
