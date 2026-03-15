@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	keeper "github.com/Supraboy981322/keeper/golang"
 )
 
 func cmd() (error, Event) {
@@ -40,33 +41,35 @@ func parse_args(in string) []string {
 	var skipping rune
 	var mem []rune
 	var cmd_start int
+	drain := func() {
+		keeper.Add(&res, string(keeper.Drain(&mem)))
+	}
 	for ; in[cmd_start] == ':'; cmd_start++ {}
 	loop: for _, r := range in[cmd_start:] {
-		if esc { add(&mem, r) ; continue loop }
+		if esc { keeper.Add(&mem, r) ; continue loop }
 
 		if skipping != 0 && r != skipping {
-			add(&res, string(drain(&mem)))
+			drain()
 			skipping = 0
 		} else if skipping != 0 {
 			continue loop
 		}
 
-		//basic common chars that need to be handled
-		//  NOTE: appostrophee currently isn't supported for string
-		//  TODO: ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-		switch r {
-			case '"': { flip(&stringing) }
-			case ' ', '\t', '\n': { skipping = r }
-		  case '\\': { flip(&esc) }
-		  default: { add(&mem, r) }
+		sw: switch r {
+			case '"': {
+				if stringing { drain() }
+				keeper.Flip(&stringing)
+			}
+		  case '\\': { keeper.Flip(&esc) }
+			case ' ', '\t', '\n': if !stringing {
+				skipping = r
+				break sw
+			}; fallthrough
+		  default: { keeper.Add(&mem, r) }
 		}
 	}
-	add(&res, string(mem))
-	//l := len(res)
-	//for _, a := range res {
-	//	if len(a) != 0 { add(&res, a) }
-	//}
-	filter(&res, "")
+	keeper.Add(&res, string(mem))
+	keeper.Filter(&res, "")
 	return res
 }
 
@@ -76,7 +79,7 @@ func toggle(args []string) (error, Event){
 		return errors.New("not enough args. need something to toggle"), Event(ERR)
 	}
 	switch args[1] {
-    case "scrollback", "history", "hist", "hide": { flip(&state.Scrollback.Hide) }
+    case "scrollback", "history", "hist", "hide": { keeper.Flip(&state.Scrollback.Hide) }
 	  default: {
 			return errors.New("don't know how to toggle "+args[1]), Event(ERR)
 		}

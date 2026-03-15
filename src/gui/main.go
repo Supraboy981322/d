@@ -9,6 +9,7 @@ import (
 	"errors"
 	"net/http"
 	rl "github.com/gen2brain/raylib-go/raylib"
+	keeper "github.com/Supraboy981322/keeper/golang"
 )
 
 var (
@@ -92,7 +93,7 @@ func main() {
 			//flip the cursor's visiblity on tick
 			time_diff := state.Cursor.Ticker.Current - state.Cursor.Ticker.LastTriggered
 			if time_diff >= state.Cursor.Ticker.Delay {
-				flip(&state.Cursor.Visible)
+				keeper.Flip(&state.Cursor.Visible)
 				state.Cursor.Ticker.LastTriggered = state.Cursor.Ticker.Current
 			}
 
@@ -146,7 +147,7 @@ func main() {
 		state.Scrollback.MaxLines = int32(rl.GetScreenHeight() / 20)
 		// TODO: cleanup
 		for i := state.Scrollback.Pos; i > 0 && int32(len(state.Scrollback.View)) > state.Scrollback.MaxLines; i-- {
-			pop(&state.Scrollback.View)
+			keeper.Pop(&state.Scrollback.View)
 		}
 
 		// TODO: remove this (for debugging)
@@ -159,7 +160,7 @@ func main() {
 
 		//shift shift the scrollback view so the last MaxLines lines are shown 
 		for len(state.Scrollback.View) > int(state.Scrollback.MaxLines) - 1 {
-			shift(&state.Scrollback.View)
+			keeper.Shift(&state.Scrollback.View)
 		}
 
 		//only print the scrollback view if not hidden
@@ -303,7 +304,7 @@ func handle_keys() (error, []Event) {
 		if is_ctrl_pressed() {
 			//might (probably will) add more here
 			switch rlKey {
-			  case rl.KeyH: { flip(&state.Scrollback.Hide) }
+			  case rl.KeyH: { keeper.Flip(&state.Scrollback.Hide) }
 			}
 			goto done
 		}
@@ -313,18 +314,18 @@ func handle_keys() (error, []Event) {
 
 			case Mode(INSERT): if k.Byte != 0 {
 				//only add key to buffer if character
-				add(&state.Buf, rune(k.Byte))	
+				keeper.Add(&state.Buf, rune(k.Byte))	
 			} else {
 				//otherwise (not a character), determine the action
 				switch rlKey {
-					case rl.KeyBackspace: { pop(&state.Buf) }
+					case rl.KeyBackspace: { keeper.Pop(&state.Buf) }
 					case rl.KeyEnter: { return state.post() }
 				}
 			}
 
 			case Mode(CMD): if k.Byte != 0 {
 				//only add to command buffer if character
-				add(&state.CmdBuf, rune(k.Byte))
+				keeper.Add(&state.CmdBuf, rune(k.Byte))
 			} else {
 				//otherwise (not a character), determine the action
 				switch rlKey {
@@ -337,7 +338,7 @@ func handle_keys() (error, []Event) {
 
 					//delete from the buffer
 					case rl.KeyBackspace: if len(state.CmdBuf) > 1 {
-						pop(&state.CmdBuf)
+						keeper.Pop(&state.CmdBuf)
 					}
 				}
 			}
@@ -454,7 +455,7 @@ func (s *State) post() (error, []Event) {
 	if e != nil { return e, []Event{ Event(ERR) } }
 
 	//add to scrollback
-	add(&s.Scrollback.History, s.Buf)
+	keeper.Add(&s.Scrollback.History, s.Buf)
 	s.Buf = []rune{}
 
 	//return ok
