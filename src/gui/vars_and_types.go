@@ -98,13 +98,8 @@ const (
 
 type (
 	Key struct {
-		LastSeen []byte
-		Repeat KeyRepeat
-	}
-	KeyRepeat struct {
-		Delay float32
-		Rate float32
-		Timer float32
+		LastSeen int32
+		Ticker Ticker
 	}
 	Events struct {
 		Previous []Event
@@ -120,6 +115,7 @@ type (
 		LastTriggered float64
 		Current float64
 		Delay float64
+		Rate float64
 	}
 	Scrollback struct {
 		History [][]rune

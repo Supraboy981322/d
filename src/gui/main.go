@@ -22,9 +22,8 @@ var (
 		},
 		CmdBuf: []rune{':'},
 		Key: Key {
-			Repeat: KeyRepeat {
-				Delay: 0.5,
-				Rate: 0.05,
+			Ticker: Ticker {
+				Delay: 0.05,
 			},
 		},
 	}
@@ -61,6 +60,7 @@ func main() {
 	}()
 
 	state.Cursor.Ticker.LastTriggered = rl.GetTime()
+	state.Key.Ticker.LastTriggered = rl.GetTime()
 	loop: for !rl.WindowShouldClose() {
 		goto start
 		done: {
@@ -81,7 +81,7 @@ func main() {
 			}
 
 			switch state.Mode {
-			  case INSERT, CMD: { state.Cursor.Y = int32(rl.GetScreenHeight() / 20) }
+			  case INSERT, CMD: { state.Cursor.Y = int32(rl.GetScreenHeight() / 20)-1 }
 			}
 		}
 
@@ -116,7 +116,7 @@ func main() {
 		
 		state.Scrollback.View = state.Scrollback.History
 		max_lines := (rl.GetScreenHeight() / 20)
-		for len(state.Scrollback.View) > max_lines-1 { //|| len(state.Scrollback.View) > state.Scrollback.Pos {
+		for len(state.Scrollback.View) > max_lines-1 || int32(len(state.Scrollback.View)) < state.Scrollback.Pos {
 			shift(&state.Scrollback.View)
 		}
 		for i, line := range state.Scrollback.View {
@@ -134,7 +134,7 @@ func main() {
 			rl.DrawTextEx(
 				state.Font,
 				string(state.CmdBuf),
-				rl.NewVector2(0, float32(rl.GetScreenHeight()-20)),
+				rl.NewVector2(0, float32((rl.GetScreenHeight()/20)-1)*20.0),
 				20,
 				0,
 				rl.RayWhite,
@@ -156,7 +156,7 @@ func main() {
 			rl.DrawTextEx(
 				state.Font,
 				string(state.InputView),
-				rl.NewVector2(left_pad, float32(rl.GetScreenHeight() - 20)),
+				rl.NewVector2(left_pad, float32((rl.GetScreenHeight()/20)-1)*20.0),
 				20,
 				0,
 				rl.RayWhite,
@@ -168,7 +168,7 @@ func main() {
 		if state.Cursor.Visible || state.Mode == Mode(NORMAL) || state.Mode == Mode(VISUAL) {
 			rl.DrawRectangle(
 				state.Cursor.X * 10,
-				(state.Cursor.Y * 20) - 10,
+				(state.Cursor.Y * 20),
 				10,
 				20,
 				rl.RayWhite,
@@ -208,14 +208,40 @@ func handle_keys() (error, []Event) {
 	} else if state.Error != nil {
 		return nil, []Event{ Event(NOP) }
 	} else if state.Mode == Mode(NORMAL) || state.Mode == Mode(VISUAL) {
-		for _, k := range []int32{ rl.KeyH, rl.KeyJ, rl.KeyK, rl.KeyL } {
+		loop: for _, k := range []int32{ rl.KeyH, rl.KeyJ, rl.KeyK, rl.KeyL } {
 			if rl.IsKeyDown(k) {
-				switch k {
-				  case rl.KeyH: if state.Cursor.X > 0 { state.Cursor.X-- }
-				  case rl.KeyK: if state.Cursor.Y > 0 { state.Cursor.Y-- }
-				  case rl.KeyJ: if state.Cursor.Y < int32(rl.GetScreenHeight() / 20) { state.Cursor.Y++ }
-				  case rl.KeyL: if state.Cursor.X < int32(rl.GetScreenWidth() / 10) { state.Cursor.X++ }
+
+				state.Key.Ticker.Current = rl.GetTime()
+				shouldRepeat := state.Key.Ticker.Current - state.Key.Ticker.LastTriggered >= state.Key.Ticker.Delay
+				isRepeat := state.Key.LastSeen == k
+				if (isRepeat && shouldRepeat) || !isRepeat {
+					state.Key.Ticker.LastTriggered = state.Key.Ticker.Current
+					goto sw
+				} else if isRepeat { continue loop }
+
+				sw: switch k {
+					// TODO: scroll one row horizontally
+					case rl.KeyH: if state.Cursor.X > 0 { state.Cursor.X-- }
+				
+					// TODO: fix vertical scrollback
+					case rl.KeyK: if state.Cursor.Y > 0 { state.Cursor.Y-- } else {
+						if state.Scrollback.Pos > 0 {
+							state.Scrollback.Pos++
+						}
+					}
+
+					// TODO: fix vertical scrollback
+					case rl.KeyJ: if state.Cursor.Y < int32(rl.GetScreenHeight() / 20) { state.Cursor.Y++ } else {
+						if state.Scrollback.Pos > int32(len(state.Scrollback.History)) {
+							state.Scrollback.Pos--
+						}
+					}
+
+					// TODO: scroll one row horizontally
+					case rl.KeyL: if state.Cursor.X < int32(rl.GetScreenWidth() / 10) { state.Cursor.X++ }
 				}
+
+				state.Key.LastSeen = k
 			}
 		}
 	}
