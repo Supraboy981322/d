@@ -41,11 +41,23 @@
           let
             libs = with pkgs; [
               go
+
+              # server
               brotli
               pkg-config
 
+              # proto desktop gui program
+              mesa
+              libXi
+              libXcursor
+              libXrandr
+              libglvnd
+              libXinerama
+              wayland
+              libxkbcommon
 
-              bun # exclusively for minifying the web ui
+              # build tools
+              bun
             ];
           in { 
           buildInputs = libs;
