@@ -13,8 +13,9 @@ func calc_v_centered(h int) int32 {
 	return int32((height/2)-((h/2)*20))
 }
 
-func calc_h_centered(w int) int32 {
-	return int32((800-(10 * w))/2)
+func calc_w_centered(w int) int32 {
+	width := rl.GetScreenWidth()
+	return int32((width-(10 * w))/2)
 }
 
 func longest_line_len(s []rune) int {
@@ -27,9 +28,14 @@ func longest_line_len(s []rune) int {
 	return longest
 }
 
-func pop(buf *[]rune) {
+func pop[S ~[]T, T any](buf *S) {
 	if len(*buf) > 0 {
 		*buf = (*buf)[:len(*buf)-1]
+	}
+}
+func shift[S ~[]T, T any](buf *S) {
+	if len(*buf) > 0 {
+		*buf = (*buf)[1:]
 	}
 }
 

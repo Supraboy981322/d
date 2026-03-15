@@ -92,6 +92,7 @@ type Mode int
 const (
 	NORMAL Mode = iota
 	INSERT
+	VISUAL
 	CMD
 )
 
@@ -112,6 +113,8 @@ type (
 	Cursor struct {
 		Visible bool
 		Ticker Ticker
+		X int32
+		Y int32
 	}
 	Ticker struct {
 		LastTriggered float64
@@ -121,6 +124,7 @@ type (
 	Scrollback struct {
 		History [][]rune
 		View [][]rune
+		Pos int32
 	}
   State struct {
 		Mode Mode

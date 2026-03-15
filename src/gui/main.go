@@ -61,7 +61,6 @@ func main() {
 	}()
 
 	state.Cursor.Ticker.LastTriggered = rl.GetTime()
-	pre := state.InputView
 	loop: for !rl.WindowShouldClose() {
 		goto start
 		done: {
@@ -80,6 +79,10 @@ func main() {
 				state.Cursor.Visible = !state.Cursor.Visible
 				state.Cursor.Ticker.LastTriggered = state.Cursor.Ticker.Current
 			}
+
+			switch state.Mode {
+			  case INSERT, CMD: { state.Cursor.Y = int32(rl.GetScreenHeight() / 20) }
+			}
 		}
 
 		var events []Event
@@ -97,7 +100,7 @@ func main() {
 
 		if state.Error != nil {
 
-			left_pad := float32(calc_h_centered(len(state.Error.Error())))
+			left_pad := float32(calc_w_centered(len(state.Error.Error())))
 
 			rl.DrawTextEx(
 				state.Font,
@@ -112,6 +115,10 @@ func main() {
 		}
 		
 		state.Scrollback.View = state.Scrollback.History
+		max_lines := (rl.GetScreenHeight() / 20)
+		for len(state.Scrollback.View) > max_lines-1 { //|| len(state.Scrollback.View) > state.Scrollback.Pos {
+			shift(&state.Scrollback.View)
+		}
 		for i, line := range state.Scrollback.View {
 			rl.DrawTextEx(
 				state.Font,
@@ -123,51 +130,47 @@ func main() {
 			)
 		}
 
-		state.InputView = state.Buf
-		input_len := int32(longest_line_len(state.InputView))
-		if string(pre) != string(state.InputView) {
-			fmt.Println("|" + string(state.InputView) + "|")
-		}
-
-		if (input_len * 6) > int32(rl.GetScreenHeight()) {
-			diff := input_len - int32(rl.GetScreenHeight() / 6)
-			if string(pre) != string(state.InputView) {
-				fmt.Println(diff)
-			}
-			state.InputView = state.InputView[diff:]
-		}
-		pre = state.InputView
-		input_len = int32(longest_line_len(state.InputView))
-
-
-		left_pad := float32(calc_h_centered(int(input_len)))
-		rl.DrawTextEx(
-			state.Font,
-			string(state.InputView), 
-			rl.NewVector2(left_pad, float32(rl.GetScreenHeight() - 20)),
-			20,
-			0,
-			rl.RayWhite,
-		)
-		
-		//draw cursor
-		if state.Cursor.Visible {
-			rl.DrawRectangle(
-				int32(left_pad) + (input_len * 10),
-				int32(rl.GetScreenHeight() - 20),
-				10,
-				20,
-				rl.RayWhite,
-			)
-		}
-
 		if state.Mode == Mode(CMD) {
 			rl.DrawTextEx(
 				state.Font,
 				string(state.CmdBuf),
-				rl.NewVector2(0, float32(rl.GetScreenHeight()-22)),
+				rl.NewVector2(0, float32(rl.GetScreenHeight()-20)),
 				20,
 				0,
+				rl.RayWhite,
+			)
+			state.Cursor.X = int32(len(state.CmdBuf))
+		} else if state.Mode == Mode(INSERT) {
+
+			state.InputView = state.Buf
+			input_len := int32(longest_line_len(state.InputView))
+
+			if (input_len * 10) > int32(rl.GetScreenWidth()) {
+				diff := input_len - int32(rl.GetScreenWidth() / 10)
+				state.InputView = state.InputView[diff:]
+			}
+			input_len = int32(longest_line_len(state.InputView))
+
+
+			left_pad := float32(calc_w_centered(int(input_len)))
+			rl.DrawTextEx(
+				state.Font,
+				string(state.InputView),
+				rl.NewVector2(left_pad, float32(rl.GetScreenHeight() - 20)),
+				20,
+				0,
+				rl.RayWhite,
+			)
+			state.Cursor.X = int32(left_pad / 10) + (input_len)
+		}
+
+		//draw cursor
+		if state.Cursor.Visible || state.Mode == Mode(NORMAL) || state.Mode == Mode(VISUAL) {
+			rl.DrawRectangle(
+				state.Cursor.X * 10,
+				(state.Cursor.Y * 20) - 10,
+				10,
+				20,
 				rl.RayWhite,
 			)
 		}
@@ -204,6 +207,17 @@ func handle_keys() (error, []Event) {
 		return nil, []Event{ Event(ESC) }
 	} else if state.Error != nil {
 		return nil, []Event{ Event(NOP) }
+	} else if state.Mode == Mode(NORMAL) || state.Mode == Mode(VISUAL) {
+		for _, k := range []int32{ rl.KeyH, rl.KeyJ, rl.KeyK, rl.KeyL } {
+			if rl.IsKeyDown(k) {
+				switch k {
+				  case rl.KeyH: if state.Cursor.X > 0 { state.Cursor.X-- }
+				  case rl.KeyK: if state.Cursor.Y > 0 { state.Cursor.Y-- }
+				  case rl.KeyJ: if state.Cursor.Y < int32(rl.GetScreenHeight() / 20) { state.Cursor.Y++ }
+				  case rl.KeyL: if state.Cursor.X < int32(rl.GetScreenWidth() / 10) { state.Cursor.X++ }
+				}
+			}
+		}
 	}
 
 	switch state.Mode {
