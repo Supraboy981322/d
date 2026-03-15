@@ -1,10 +1,13 @@
 package main
 
 import (
+	"io"
 	"fmt"
 	"time"
+	"bytes"
 	"errors"
 	"strings"
+	"net/http"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -63,7 +66,7 @@ func main() {
 	state.Key.Ticker.LastTriggered = rl.GetTime()
 	loop: for !rl.WindowShouldClose() {
 		goto start
-		done: {
+		done: { //defer doesn't run until loop breaks, which is stupid
 			state.PreviousMode = state.Mode
 			state.Events.Previous = state.Events.Current
 			state.Events.Current = []Event{}
@@ -72,16 +75,19 @@ func main() {
 		}
 		start: {
 			if state.Exit { break loop }
+
 			rl.BeginDrawing()
 			rl.ClearBackground(rl.Black)
+
 			state.Cursor.Ticker.Current = rl.GetTime()
-			if state.Cursor.Ticker.Current - state.Cursor.Ticker.LastTriggered >= state.Cursor.Ticker.Delay {
+			time_diff := state.Cursor.Ticker.Current - state.Cursor.Ticker.LastTriggered
+			if time_diff >= state.Cursor.Ticker.Delay {
 				state.Cursor.Visible = !state.Cursor.Visible
 				state.Cursor.Ticker.LastTriggered = state.Cursor.Ticker.Current
 			}
 
 			switch state.Mode {
-			  case INSERT, CMD: { state.Cursor.Y = int32(rl.GetScreenHeight() / 20)-1 }
+			  case INSERT, CMD: { state.Cursor.Y = int32(rl.GetScreenHeight() / 20) - 1 }
 			}
 		}
 
@@ -116,7 +122,9 @@ func main() {
 		
 		state.Scrollback.View = state.Scrollback.History
 		max_lines := (rl.GetScreenHeight() / 20)
-		for len(state.Scrollback.View) > max_lines-1 || int32(len(state.Scrollback.View)) < state.Scrollback.Pos {
+		exceeds_screen := len(state.Scrollback.View) > max_lines - 1
+		exceeds_scrollback := int32(len(state.Scrollback.View)) < state.Scrollback.Pos
+		for exceeds_screen || exceeds_scrollback {
 			shift(&state.Scrollback.View)
 		}
 		for i, line := range state.Scrollback.View {
@@ -182,7 +190,11 @@ func cmd() (error, Event) {
 	defer func() {
 		state.CmdBuf = []rune{':'}
 	}()
-	if len(strings.TrimSpace(string(state.CmdBuf))) < 1 { return nil, Event(NOP) }
+
+	if len(strings.TrimSpace(string(state.CmdBuf))) < 1 {
+		return nil, Event(NOP)
+	}
+
 	first_trimmed := strings.Split(string(state.CmdBuf), " ")[0][1:]
 	switch first_trimmed {
 		case "q": { state.Exit = true }
@@ -190,6 +202,7 @@ func cmd() (error, Event) {
 			return errors.New("unknown command"), Event(ERR)
 		}
 	}
+
 	return nil, Event(NOP)
 }
 
@@ -212,7 +225,8 @@ func handle_keys() (error, []Event) {
 			if rl.IsKeyDown(k) {
 
 				state.Key.Ticker.Current = rl.GetTime()
-				shouldRepeat := state.Key.Ticker.Current - state.Key.Ticker.LastTriggered >= state.Key.Ticker.Delay
+				time_diff := state.Key.Ticker.Current - state.Key.Ticker.LastTriggered
+				shouldRepeat := time_diff >= state.Key.Ticker.Delay
 				isRepeat := state.Key.LastSeen == k
 				if (isRepeat && shouldRepeat) || !isRepeat {
 					state.Key.Ticker.LastTriggered = state.Key.Ticker.Current
@@ -226,19 +240,25 @@ func handle_keys() (error, []Event) {
 					// TODO: fix vertical scrollback
 					case rl.KeyK: if state.Cursor.Y > 0 { state.Cursor.Y-- } else {
 						if state.Scrollback.Pos > 0 {
-							state.Scrollback.Pos++
-						}
-					}
-
-					// TODO: fix vertical scrollback
-					case rl.KeyJ: if state.Cursor.Y < int32(rl.GetScreenHeight() / 20) { state.Cursor.Y++ } else {
-						if state.Scrollback.Pos > int32(len(state.Scrollback.History)) {
+							fmt.Println("up")
 							state.Scrollback.Pos--
 						}
 					}
 
+					// TODO: fix vertical scrollback
+					case rl.KeyJ: if state.Cursor.Y < int32(rl.GetScreenHeight() / 20) {
+						state.Cursor.Y++
+					} else {
+						if state.Scrollback.Pos < int32(len(state.Scrollback.History)) {
+							fmt.Println("down")
+							state.Scrollback.Pos++
+						}
+					}
+
 					// TODO: scroll one row horizontally
-					case rl.KeyL: if state.Cursor.X < int32(rl.GetScreenWidth() / 10) { state.Cursor.X++ }
+					case rl.KeyL: if state.Cursor.X < int32(rl.GetScreenWidth() / 10) {
+						state.Cursor.X++
+					}
 				}
 
 				state.Key.LastSeen = k
@@ -253,26 +273,21 @@ func handle_keys() (error, []Event) {
 		} else {
 			switch rl.GetKeyPressed() {
 				case rl.KeyBackspace: { pop(&state.Buf) }
-			  case rl.KeyEnter: {
-					state.Scrollback.History = append(state.Scrollback.History, state.Buf)
-					state.Buf = []rune{}
-				}
+				case rl.KeyEnter: { return state.post() }
 			}
 		}
 
-	  case Mode(CMD): {
-			if k := rl.GetCharPressed(); k != 0 {
-				state.CmdBuf = append(state.CmdBuf, rune(k))	
-			} else {
-				switch rl.GetKeyPressed() {
-					case rl.KeyEnter: {
-						state.Mode = Mode(NORMAL)
-						e, event := cmd()
-						return e, []Event{ Event(CMD), event }
-					}
-					case rl.KeyBackspace: if len(state.CmdBuf) > 1 {
-						pop(&state.CmdBuf)
-					}
+	  case Mode(CMD): if k := rl.GetCharPressed(); k != 0 {
+			state.CmdBuf = append(state.CmdBuf, rune(k))	
+		} else {
+			switch rl.GetKeyPressed() {
+				case rl.KeyEnter: {
+					state.Mode = Mode(NORMAL)
+					e, event := cmd()
+					return e, []Event{ Event(CMD), event }
+				}
+				case rl.KeyBackspace: if len(state.CmdBuf) > 1 {
+					pop(&state.CmdBuf)
 				}
 			}
 		}
@@ -280,10 +295,33 @@ func handle_keys() (error, []Event) {
 		case Mode(NORMAL): if k := rl.GetCharPressed(); k != 0 {
 			switch k {
 				case 'i': { state.Mode = Mode(INSERT) }
+				case 'v': { state.Mode = Mode(VISUAL) }
 		    case ':': { state.Mode = Mode(CMD) }
 			}
 		} else { /*  TODO: */ }
 
 	}
+	return nil, []Event{ Event(NOP) }
+}
+
+func (s *State) post() (error, []Event) {
+	var e error
+
+	buf := bytes.NewBuffer([]byte(string(s.Buf)))
+	req, e := http.NewRequest("POST", "http://[::1]:8008/post", buf)
+	if e != nil { return e, []Event{ Event(ERR) } }
+
+	req.Header.Set("Content-Type", "text/plain")
+	client := &http.Client{}
+	res, e := client.Do(req)
+	if e != nil { return e, []Event{ Event(ERR) } }
+	defer res.Body.Close()
+
+	_, e = io.ReadAll(res.Body)
+	if e != nil { return e, []Event{ Event(ERR) } }
+
+	s.Scrollback.History = append(s.Scrollback.History, s.Buf)
+	s.Buf = []rune{}
+
 	return nil, []Event{ Event(NOP) }
 }
