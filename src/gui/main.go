@@ -260,6 +260,8 @@ func cmd() (error, Event) {
 	switch first_trimmed {
 		//quit (ignores any remaining args)
 		case "q": { state.Exit = true }
+	  case "hide": { state.Scrollback.Hide = true }
+	  case "show": { state.Scrollback.Hide = false }
 
 		// TODO: more commands
 
