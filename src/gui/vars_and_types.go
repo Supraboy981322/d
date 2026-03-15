@@ -2,12 +2,87 @@ package main
 
 import rl "github.com/gen2brain/raylib-go/raylib"
 
-type KeyPair struct {
-	Key int32
-	Val byte
+//events
+type Event int
+const (
+	NOP Event = iota
+	ESC
+	EXIT
+	ERR
+)
+
+//modes
+type Mode int
+const (
+	NORMAL Mode = iota
+	INSERT
+	VISUAL
+	CMD
+)
+
+//state
+type (
+	Events struct {
+		Previous []Event
+		Current []Event
+	}
+	Cursor struct {
+		Visible bool
+		Ticker Ticker
+		X int32
+		Y int32
+	}
+	Ticker struct {
+		LastTriggered float64
+		Current float64
+		Delay float64
+		Rate float64
+	}
+	Scrollback struct {
+		History [][]rune
+		View [][]rune
+		Pos int32
+		MaxLines int32
+		Hide bool
+	}
+	Key struct {
+		Keys map[int32]KeyState
+		LastSeen []int32
+	}
+  State struct {
+		Mode Mode
+		PreviousMode Mode
+		Buf []rune
+		CmdBuf []rune
+		Exit bool
+		Keys Key
+		Events Events
+		Error error
+		InputView []rune
+		Cursor Cursor 
+		Font rl.Font
+		Scrollback Scrollback
+	}
+)
+
+//the state of a key
+type KeyState struct {
+	Ticker *Ticker
+	Byte byte
 }
-var Keys = map[int32]Key {
-	rl.KeySpace:        NewKey(' '),
+//helper to init a key's state
+func NewKey(b byte) KeyState {
+	return KeyState {
+		Ticker: &Ticker {
+			Rate: 0.05, //50ms repeat rate
+			Delay: 0.4, //400ms delay before repeat starts
+		},
+		Byte: b,
+	}
+}
+
+//map of keys and their state
+var Keys = map[int32]KeyState {
 	rl.KeyEscape:       NewKey(0),
 	rl.KeyEnter:        NewKey(0),
 	rl.KeyTab:          NewKey(0),
@@ -31,6 +106,7 @@ var Keys = map[int32]Key {
 	rl.KeyRightControl: NewKey(0),
 	rl.KeyRightAlt:     NewKey(0),
 	rl.KeyRightSuper:   NewKey(0),
+	rl.KeySpace:        NewKey(' '),
 	rl.KeyLeftBracket:  NewKey('['),
 	rl.KeyBackSlash:    NewKey('\\'),
 	rl.KeyRightBracket: NewKey(']'),
@@ -78,78 +154,4 @@ var Keys = map[int32]Key {
 	rl.KeyX:            NewKey('x'),
 	rl.KeyY:            NewKey('y'),
 	rl.KeyZ:            NewKey('z'),
-}
-
-type Event int
-const (
-	NOP Event = iota
-	ESC
-	EXIT
-	ERR
-)
-
-type Mode int
-const (
-	NORMAL Mode = iota
-	INSERT
-	VISUAL
-	CMD
-)
-
-type (
-	Key struct {
-		Ticker *Ticker
-		Byte byte
-	}
-	Events struct {
-		Previous []Event
-		Current []Event
-	}
-	Cursor struct {
-		Visible bool
-		Ticker Ticker
-		X int32
-		Y int32
-	}
-	Ticker struct {
-		LastTriggered float64
-		Current float64
-		Delay float64
-		Rate float64
-	}
-	Scrollback struct {
-		History [][]rune
-		View [][]rune
-		Pos int32
-		MaxLines int32
-		Hide bool
-	}
-	KeysState struct {
-		Keys map[int32]Key
-		LastSeen []int32
-	}
-  State struct {
-		Mode Mode
-		PreviousMode Mode
-		Buf []rune
-		CmdBuf []rune
-		Exit bool
-		Keys KeysState
-		Events Events
-		Error error
-		InputView []rune
-		Cursor Cursor 
-		Font rl.Font
-		Scrollback Scrollback
-	}
-)
-
-func NewKey(b byte) Key {
-	return Key {
-		Ticker: &Ticker {
-			Rate: 0.05,
-			Delay: 0.4,
-		},
-		Byte: b,
-	}
 }
