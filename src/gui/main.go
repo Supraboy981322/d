@@ -119,10 +119,17 @@ func main() {
 		}
 		
 		state.Scrollback.View = state.Scrollback.History
-		max_lines := (rl.GetScreenHeight() / 20)
-		exceeds_screen := len(state.Scrollback.View) > max_lines - 1
-		exceeds_scrollback := int32(len(state.Scrollback.View)) < state.Scrollback.Pos
-		for exceeds_screen || exceeds_scrollback {
+		state.Scrollback.MaxLines = int32(rl.GetScreenHeight() / 20)
+		for i := state.Scrollback.Pos; i > 0 && int32(len(state.Scrollback.View)) > state.Scrollback.MaxLines; i-- {
+			pop(&state.Scrollback.View)
+		}
+		fmt.Printf(
+			"pos{%d} screen{%d:%d} max{%d}\n",
+			state.Scrollback.Pos,
+			state.Scrollback.Pos, state.Scrollback.Pos + state.Scrollback.MaxLines,
+			state.Scrollback.MaxLines,
+		)
+		for len(state.Scrollback.View) > int(state.Scrollback.MaxLines) - 1 {
 			shift(&state.Scrollback.View)
 		}
 		for i, line := range state.Scrollback.View {
@@ -156,7 +163,6 @@ func main() {
 				state.InputView = state.InputView[diff:]
 			}
 			input_len = int32(longest_line_len(state.InputView))
-
 
 			left_pad := float32(calc_w_centered(int(input_len)))
 			rl.DrawTextEx(
@@ -222,7 +228,14 @@ func handle_keys() (error, []Event) {
 
 	current_keys := GetKeysDown()
 	loop2: for rlKey, k := range state.Keys.Keys {
-		if !rl.IsKeyDown(rlKey) { continue loop2 }
+		if !rl.IsKeyDown(rlKey) {
+			k.Ticker.LastTriggered = 0 
+			continue loop2
+		}
+		cleanup := func() {
+			state.Keys.LastSeen = current_keys 
+		}
+		defer cleanup()
 
 		k.Ticker.Current = rl.GetTime()
 		isRepeat := slices.Contains(state.Keys.LastSeen, rlKey)
@@ -300,20 +313,28 @@ func handle_keys() (error, []Event) {
 				if state.Cursor.X > 0 { state.Cursor.X-- }
 			} else if rl.IsKeyDown(rl.KeyJ) {
 				// TODO: fix vertical scrollback
-				if state.Cursor.Y < int32(rl.GetScreenHeight() / 20) {
+				if state.Cursor.Y < state.Scrollback.MaxLines {
 					state.Cursor.Y++
 				} else {
-					if state.Scrollback.Pos < int32(len(state.Scrollback.History)) {
-						fmt.Println("down")
+					scrollback_exceeds := len(state.Scrollback.History) > int(state.Scrollback.MaxLines)
+					position_allows := state.Scrollback.Pos < state.Scrollback.MaxLines 
+					can_scroll := position_allows && scrollback_exceeds
+					if can_scroll {
 						state.Scrollback.Pos++
+						fmt.Println("down")
 					}
 				}
 			} else if rl.IsKeyDown(rl.KeyK) {
 				// TODO: fix vertical scrollback
-				if state.Cursor.Y > 0 { state.Cursor.Y-- } else {
-					if state.Scrollback.Pos > 0 {
+				if state.Cursor.Y > 0 {
+					state.Cursor.Y--
+				} else {
+					scrollback_exceeds := len(state.Scrollback.History) > int(state.Scrollback.MaxLines)
+					position_allows := state.Scrollback.Pos < state.Scrollback.MaxLines 
+					can_scroll := position_allows && scrollback_exceeds
+					if can_scroll {
 						fmt.Println("up")
-						state.Scrollback.Pos--
+						state.Scrollback.Pos++
 					}
 				}
 			} else if rl.IsKeyDown(rl.KeyL) {
@@ -324,7 +345,7 @@ func handle_keys() (error, []Event) {
 			}
 		}
 		done: {
-			state.Keys.LastSeen = current_keys 
+			cleanup()
 			break loop2
 		}
 	}
