@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"slices"
 	"errors"
-	"strings"
 	"net/http"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -93,7 +92,7 @@ func main() {
 			//flip the cursor's visiblity on tick
 			time_diff := state.Cursor.Ticker.Current - state.Cursor.Ticker.LastTriggered
 			if time_diff >= state.Cursor.Ticker.Delay {
-				state.Cursor.Visible = !state.Cursor.Visible
+				flip(&state.Cursor.Visible)
 				state.Cursor.Ticker.LastTriggered = state.Cursor.Ticker.Current
 			}
 
@@ -243,36 +242,6 @@ func main() {
   }
 }
 
-func cmd() (error, Event) {
-	//reset the buffer on return 
-	defer func() {
-		state.CmdBuf = []rune{':'}
-	}()
-
-	//NOP on empty input
-	if len(strings.TrimSpace(string(state.CmdBuf))) < 1 {
-		return nil, Event(NOP)
-	}
-
-	//get the first arg (ignores the ':')  TODO: proper parsing
-	first_trimmed := strings.Split(string(state.CmdBuf), " ")[0][1:]
-	//switch on command name
-	switch first_trimmed {
-		//quit (ignores any remaining args)
-		case "q": { state.Exit = true }
-	  case "hide": { state.Scrollback.Hide = true }
-	  case "show": { state.Scrollback.Hide = false }
-
-		// TODO: more commands
-
-	  default: {
-			return errors.New("unknown command"), Event(ERR)
-		}
-	}
-
-	//most commands are a NOP (at the moment)
-	return nil, Event(NOP)
-}
 
 // WARN: spaget
 func handle_keys() (error, []Event) {
@@ -334,7 +303,7 @@ func handle_keys() (error, []Event) {
 		if is_ctrl_pressed() {
 			//might (probably will) add more here
 			switch rlKey {
-			  case rl.KeyH: { state.Scrollback.Hide = !state.Scrollback.Hide }
+			  case rl.KeyH: { flip(&state.Scrollback.Hide) }
 			}
 			goto done
 		}
@@ -344,7 +313,7 @@ func handle_keys() (error, []Event) {
 
 			case Mode(INSERT): if k.Byte != 0 {
 				//only add key to buffer if character
-				state.Buf = append(state.Buf, rune(k.Byte))	
+				add(&state.Buf, rune(k.Byte))	
 			} else {
 				//otherwise (not a character), determine the action
 				switch rlKey {
@@ -355,7 +324,7 @@ func handle_keys() (error, []Event) {
 
 			case Mode(CMD): if k.Byte != 0 {
 				//only add to command buffer if character
-				state.CmdBuf = append(state.CmdBuf, rune(k.Byte))	
+				add(&state.CmdBuf, rune(k.Byte))
 			} else {
 				//otherwise (not a character), determine the action
 				switch rlKey {
@@ -485,7 +454,7 @@ func (s *State) post() (error, []Event) {
 	if e != nil { return e, []Event{ Event(ERR) } }
 
 	//add to scrollback
-	s.Scrollback.History = append(s.Scrollback.History, s.Buf)
+	add(&s.Scrollback.History, s.Buf)
 	s.Buf = []rune{}
 
 	//return ok
