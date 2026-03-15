@@ -45,7 +45,7 @@ func wait(f func()bool) {
 	}
 }
 
-func is_shift_pressed() bool {
+func IsShiftDown() bool {
 	return rl.IsKeyDown(rl.KeyLeftShift) || rl.IsKeyDown(rl.KeyRightShift)
 }
 
@@ -53,16 +53,24 @@ func is_ctrl_pressed() bool {
 	return rl.IsKeyDown(rl.KeyLeftControl) || rl.IsKeyDown(rl.KeyRightControl)
 }
 
-func GetKeysDown() []byte {
+func GetKeysDown() []int32 {
+	var res []int32
+	for k := range Keys {
+		if rl.IsKeyDown(k) { res = append(res, k) }
+	}
+	return res
+}
+
+func GetCharsDown() []byte {
 	var res []byte
 	for k, b := range Keys {
-		if rl.IsKeyDown(k) { res = append(res, b) }
+		if rl.IsKeyDown(k) { res = append(res, b.Byte) }
 	}
 	return res
 }
 
 func IsCharPressed(b byte) bool {
-	return bytes.Contains(GetKeysDown(), []byte{b})
+	return bytes.Contains(GetCharsDown(), []byte{b})
 }
 
 func (es *Events) Add(e ...Event) {

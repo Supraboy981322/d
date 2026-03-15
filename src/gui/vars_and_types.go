@@ -6,78 +6,78 @@ type KeyPair struct {
 	Key int32
 	Val byte
 }
-var Keys = map[int32]byte {
-	rl.KeySpace: ' ',
-	rl.KeyEscape: 0,
-	rl.KeyEnter: 0,
-	rl.KeyTab: 0,
-	rl.KeyBackspace: 0,
-	rl.KeyInsert: 0,
-	rl.KeyDelete: 0,
-	rl.KeyRight: 0,
-	rl.KeyLeft: 0,
-	rl.KeyDown: 0,
-	rl.KeyUp: 0,
-	rl.KeyPageUp: 0,
-	rl.KeyPageDown: 0,
-	rl.KeyHome: 0,
-	rl.KeyEnd: 0,
-	rl.KeyCapsLock: 0,
-	rl.KeyLeftShift: 0,
-	rl.KeyLeftControl: 0,
-	rl.KeyLeftAlt: 0,
-	rl.KeyLeftSuper: 0,
-	rl.KeyRightShift: 0,
-	rl.KeyRightControl: 0,
-	rl.KeyRightAlt: 0,
-	rl.KeyRightSuper: 0,
-	rl.KeyLeftBracket: '[',
-	rl.KeyBackSlash: '\\',
-	rl.KeyRightBracket: ']',
-	rl.KeyGrave: '~',
-	rl.KeyApostrophe: '\'',
-	rl.KeyComma: ',',
-	rl.KeyMinus: '-',
-	rl.KeyPeriod: '.',
-	rl.KeySlash: '/',
-	rl.KeyZero: '0',
-	rl.KeyOne: '1',
-	rl.KeyTwo: '2',
-	rl.KeyThree: '3',
-	rl.KeyFour: '4',
-	rl.KeyFive: '5',
-	rl.KeySix: '6',
-	rl.KeySeven: '7',
-	rl.KeyEight: '8',
-	rl.KeyNine: '9',
-	rl.KeySemicolon: ';',
-	rl.KeyEqual: '=',
-	rl.KeyA: 'a',
-	rl.KeyB: 'b',
-	rl.KeyC: 'c',
-	rl.KeyD: 'd',
-	rl.KeyE: 'e',
-	rl.KeyF: 'f',
-	rl.KeyG: 'g',
-	rl.KeyH: 'h',
-	rl.KeyI: 'i',
-	rl.KeyJ: 'j',
-	rl.KeyK: 'k',
-	rl.KeyL: 'l',
-	rl.KeyM: 'm',
-	rl.KeyN: 'n',
-	rl.KeyO: 'o',
-	rl.KeyP: 'p',
-	rl.KeyQ: 'q',
-	rl.KeyR: 'r',
-	rl.KeyS: 's',
-	rl.KeyT: 't',
-	rl.KeyU: 'u',
-	rl.KeyV: 'v',
-	rl.KeyW: 'w',
-	rl.KeyX: 'x',
-	rl.KeyY: 'y',
-	rl.KeyZ: 'z',
+var Keys = map[int32]Key {
+	rl.KeySpace:        NewKey(' '),
+	rl.KeyEscape:       NewKey(0),
+	rl.KeyEnter:        NewKey(0),
+	rl.KeyTab:          NewKey(0),
+	rl.KeyBackspace:    NewKey(0),
+	rl.KeyInsert:       NewKey(0),
+	rl.KeyDelete:       NewKey(0),
+	rl.KeyRight:        NewKey(0),
+	rl.KeyLeft:         NewKey(0),
+	rl.KeyDown:         NewKey(0),
+	rl.KeyUp:           NewKey(0),
+	rl.KeyPageUp:       NewKey(0),
+	rl.KeyPageDown:     NewKey(0),
+	rl.KeyHome:         NewKey(0),
+	rl.KeyEnd:          NewKey(0),
+	rl.KeyCapsLock:     NewKey(0),
+	rl.KeyLeftShift:    NewKey(0),
+	rl.KeyLeftControl:  NewKey(0),
+	rl.KeyLeftAlt:      NewKey(0),
+	rl.KeyLeftSuper:    NewKey(0),
+	rl.KeyRightShift:   NewKey(0),
+	rl.KeyRightControl: NewKey(0),
+	rl.KeyRightAlt:     NewKey(0),
+	rl.KeyRightSuper:   NewKey(0),
+	rl.KeyLeftBracket:  NewKey('['),
+	rl.KeyBackSlash:    NewKey('\\'),
+	rl.KeyRightBracket: NewKey(']'),
+	rl.KeyGrave:        NewKey('~'),
+	rl.KeyApostrophe:   NewKey('\''),
+	rl.KeyComma:        NewKey(','),
+	rl.KeyMinus:        NewKey('-'),
+	rl.KeyPeriod:       NewKey('.'),
+	rl.KeySlash:        NewKey('/'),
+	rl.KeyZero:         NewKey('0'),
+	rl.KeyOne:          NewKey('1'),
+	rl.KeyTwo:          NewKey('2'),
+	rl.KeyThree:        NewKey('3'),
+	rl.KeyFour:         NewKey('4'),
+	rl.KeyFive:         NewKey('5'),
+	rl.KeySix:          NewKey('6'),
+	rl.KeySeven:        NewKey('7'),
+	rl.KeyEight:        NewKey('8'),
+	rl.KeyNine:         NewKey('9'),
+	rl.KeySemicolon:    NewKey(';'),
+	rl.KeyEqual:        NewKey('='),
+	rl.KeyA:            NewKey('a'),
+	rl.KeyB:            NewKey('b'),
+	rl.KeyC:            NewKey('c'),
+	rl.KeyD:            NewKey('d'),
+	rl.KeyE:            NewKey('e'),
+	rl.KeyF:            NewKey('f'),
+	rl.KeyG:            NewKey('g'),
+	rl.KeyH:            NewKey('h'),
+	rl.KeyI:            NewKey('i'),
+	rl.KeyJ:            NewKey('j'),
+	rl.KeyK:            NewKey('k'),
+	rl.KeyL:            NewKey('l'),
+	rl.KeyM:            NewKey('m'),
+	rl.KeyN:            NewKey('n'),
+	rl.KeyO:            NewKey('o'),
+	rl.KeyP:            NewKey('p'),
+	rl.KeyQ:            NewKey('q'),
+	rl.KeyR:            NewKey('r'),
+	rl.KeyS:            NewKey('s'),
+	rl.KeyT:            NewKey('t'),
+	rl.KeyU:            NewKey('u'),
+	rl.KeyV:            NewKey('v'),
+	rl.KeyW:            NewKey('w'),
+	rl.KeyX:            NewKey('x'),
+	rl.KeyY:            NewKey('y'),
+	rl.KeyZ:            NewKey('z'),
 }
 
 type Event int
@@ -98,8 +98,8 @@ const (
 
 type (
 	Key struct {
-		LastSeen int32
-		Ticker Ticker
+		Ticker *Ticker
+		Byte byte
 	}
 	Events struct {
 		Previous []Event
@@ -122,13 +122,17 @@ type (
 		View [][]rune
 		Pos int32
 	}
+	KeysState struct {
+		Keys map[int32]Key
+		LastSeen []int32
+	}
   State struct {
 		Mode Mode
 		PreviousMode Mode
 		Buf []rune
 		CmdBuf []rune
 		Exit bool
-		Key Key
+		Keys KeysState
 		Events Events
 		Error error
 		InputView []rune
@@ -137,3 +141,13 @@ type (
 		Scrollback Scrollback
 	}
 )
+
+func NewKey(b byte) Key {
+	return Key {
+		Ticker: &Ticker {
+			Rate: 0.05,
+			Delay: 0.4,
+		},
+		Byte: b,
+	}
+}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 	"bytes"
+	"slices"
 	"errors"
 	"strings"
 	"net/http"
@@ -24,10 +25,8 @@ var (
 			},
 		},
 		CmdBuf: []rune{':'},
-		Key: Key {
-			Ticker: Ticker {
-				Delay: 0.05,
-			},
+		Keys: KeysState {
+			Keys: Keys,
 		},
 	}
 )
@@ -63,7 +62,6 @@ func main() {
 	}()
 
 	state.Cursor.Ticker.LastTriggered = rl.GetTime()
-	state.Key.Ticker.LastTriggered = rl.GetTime()
 	loop: for !rl.WindowShouldClose() {
 		goto start
 		done: { //defer doesn't run until loop breaks, which is stupid
@@ -220,86 +218,115 @@ func handle_keys() (error, []Event) {
 		return nil, []Event{ Event(ESC) }
 	} else if state.Error != nil {
 		return nil, []Event{ Event(NOP) }
-	} else if state.Mode == Mode(NORMAL) || state.Mode == Mode(VISUAL) {
-		loop: for _, k := range []int32{ rl.KeyH, rl.KeyJ, rl.KeyK, rl.KeyL } {
-			if rl.IsKeyDown(k) {
-
-				state.Key.Ticker.Current = rl.GetTime()
-				time_diff := state.Key.Ticker.Current - state.Key.Ticker.LastTriggered
-				shouldRepeat := time_diff >= state.Key.Ticker.Delay
-				isRepeat := state.Key.LastSeen == k
-				if (isRepeat && shouldRepeat) || !isRepeat {
-					state.Key.Ticker.LastTriggered = state.Key.Ticker.Current
-					goto sw
-				} else if isRepeat { continue loop }
-
-				sw: switch k {
-					// TODO: scroll one row horizontally
-					case rl.KeyH: if state.Cursor.X > 0 { state.Cursor.X-- }
-				
-					// TODO: fix vertical scrollback
-					case rl.KeyK: if state.Cursor.Y > 0 { state.Cursor.Y-- } else {
-						if state.Scrollback.Pos > 0 {
-							fmt.Println("up")
-							state.Scrollback.Pos--
-						}
-					}
-
-					// TODO: fix vertical scrollback
-					case rl.KeyJ: if state.Cursor.Y < int32(rl.GetScreenHeight() / 20) {
-						state.Cursor.Y++
-					} else {
-						if state.Scrollback.Pos < int32(len(state.Scrollback.History)) {
-							fmt.Println("down")
-							state.Scrollback.Pos++
-						}
-					}
-
-					// TODO: scroll one row horizontally
-					case rl.KeyL: if state.Cursor.X < int32(rl.GetScreenWidth() / 10) {
-						state.Cursor.X++
-					}
-				}
-
-				state.Key.LastSeen = k
-			}
-		}
 	}
 
-	switch state.Mode {
+	current_keys := GetKeysDown()
+	loop2: for rlKey, k := range state.Keys.Keys {
+		if !rl.IsKeyDown(rlKey) { continue loop2 }
 
-	  case Mode(INSERT): if k := rl.GetCharPressed(); k != 0 {
-			state.Buf = append(state.Buf, rune(k))	
+		k.Ticker.Current = rl.GetTime()
+		isRepeat := slices.Contains(state.Keys.LastSeen, rlKey)
+		if !isRepeat {
+			k.Ticker.LastTriggered = k.Ticker.Current
+			k.Ticker.Delay = 0.4
 		} else {
-			switch rl.GetKeyPressed() {
-				case rl.KeyBackspace: { pop(&state.Buf) }
-				case rl.KeyEnter: { return state.post() }
-			}
+			time_diff := k.Ticker.Current - k.Ticker.LastTriggered
+			if time_diff >= k.Ticker.Delay {
+				k.Ticker.LastTriggered = k.Ticker.Current
+				k.Ticker.Delay = k.Ticker.Rate
+			} else { goto done }
 		}
 
-	  case Mode(CMD): if k := rl.GetCharPressed(); k != 0 {
-			state.CmdBuf = append(state.CmdBuf, rune(k))	
-		} else {
-			switch rl.GetKeyPressed() {
-				case rl.KeyEnter: {
-					state.Mode = Mode(NORMAL)
-					e, event := cmd()
-					return e, []Event{ Event(CMD), event }
+		switch state.Mode {
+
+			case Mode(INSERT): if k.Byte != 0 {
+				state.Buf = append(state.Buf, rune(k.Byte))	
+			} else {
+				//switch on the key
+				switch rlKey {
+					case rl.KeyBackspace: { pop(&state.Buf) }
+					case rl.KeyEnter: { return state.post() }
+					default: if k.Byte != 0 {
+						return errors.New("unknown action: " + string(k.Byte)), []Event{ Event(ERR) }
+					}
 				}
-				case rl.KeyBackspace: if len(state.CmdBuf) > 1 {
-					pop(&state.CmdBuf)
+			}
+
+			case Mode(CMD): if k.Byte != 0 {
+				state.CmdBuf = append(state.CmdBuf, rune(k.Byte))	
+			} else {
+				switch rlKey {
+					case rl.KeyEnter: {
+						state.Mode = Mode(NORMAL)
+						e, event := cmd()
+						return e, []Event{ Event(CMD), event }
+					}
+					case rl.KeyBackspace: if len(state.CmdBuf) > 1 {
+						pop(&state.CmdBuf)
+					}
+					default: if k.Byte != 0 {
+						return errors.New("unknown action: " + string(k.Byte)), []Event{ Event(ERR) }
+					}
+				}
+			}
+
+			case Mode(NORMAL): if k.Byte != 0 {
+				switch k.Byte {
+					case 'i': { state.Mode = Mode(INSERT) }
+					case 'v': { state.Mode = Mode(VISUAL) }
+					case ';': if IsShiftDown() { state.Mode = Mode(CMD) }
+
+					case 'h', 'j', 'k', 'l': { goto vim_movements }
+
+					default: if k.Byte != 0 {
+						return errors.New("unknown action: " + string(k.Byte)), []Event{ Event(ERR) }
+					}
+				}
+			} else { /*  TODO: */ }
+		  case Mode(VISUAL): if k.Byte != 0 {
+				// TODO: VISUAL mode actions
+				switch k.Byte {
+					case 'h', 'j', 'k', 'l': { goto vim_movements }
+					default: if k.Byte != 0 {
+						return errors.New("unknown action: " + string(k.Byte)), []Event{ Event(ERR) }
+					}
+				}
+			} else { /* TODO: */  }
+		}
+		
+		goto done
+		vim_movements: {
+			if rl.IsKeyDown(rl.KeyH) {
+				if state.Cursor.X > 0 { state.Cursor.X-- }
+			} else if rl.IsKeyDown(rl.KeyJ) {
+				// TODO: fix vertical scrollback
+				if state.Cursor.Y < int32(rl.GetScreenHeight() / 20) {
+					state.Cursor.Y++
+				} else {
+					if state.Scrollback.Pos < int32(len(state.Scrollback.History)) {
+						fmt.Println("down")
+						state.Scrollback.Pos++
+					}
+				}
+			} else if rl.IsKeyDown(rl.KeyK) {
+				// TODO: fix vertical scrollback
+				if state.Cursor.Y > 0 { state.Cursor.Y-- } else {
+					if state.Scrollback.Pos > 0 {
+						fmt.Println("up")
+						state.Scrollback.Pos--
+					}
+				}
+			} else if rl.IsKeyDown(rl.KeyL) {
+				// TODO: scroll one row horizontally
+				if state.Cursor.X < int32(rl.GetScreenWidth() / 10) {
+					state.Cursor.X++
 				}
 			}
 		}
-
-		case Mode(NORMAL): if k := rl.GetCharPressed(); k != 0 {
-			switch k {
-				case 'i': { state.Mode = Mode(INSERT) }
-				case 'v': { state.Mode = Mode(VISUAL) }
-		    case ':': { state.Mode = Mode(CMD) }
-			}
-		} else { /*  TODO: */ }
-
+		done: {
+			state.Keys.LastSeen = current_keys 
+			break loop2
+		}
 	}
 	return nil, []Event{ Event(NOP) }
 }
