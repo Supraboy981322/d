@@ -132,15 +132,17 @@ func main() {
 		for len(state.Scrollback.View) > int(state.Scrollback.MaxLines) - 1 {
 			shift(&state.Scrollback.View)
 		}
-		for i, line := range state.Scrollback.View {
-			rl.DrawTextEx(
-				state.Font,
-				string(line), 
-				rl.NewVector2(10, float32(20 * i)),
-				20,
-				0,
-				rl.RayWhite,
-			)
+		if !state.Scrollback.Hide {
+			for i, line := range state.Scrollback.View {
+				rl.DrawTextEx(
+					state.Font,
+					string(line), 
+					rl.NewVector2(10, float32(20 * i)),
+					20,
+					0,
+					rl.RayWhite,
+				)
+			}
 		}
 
 		if state.Mode == Mode(CMD) {
@@ -248,6 +250,12 @@ func handle_keys() (error, []Event) {
 				k.Ticker.LastTriggered = k.Ticker.Current
 				k.Ticker.Delay = k.Ticker.Rate
 			} else { goto done }
+		}
+		if is_ctrl_pressed() {
+			switch rlKey {
+			  case rl.KeyH: { state.Scrollback.Hide = !state.Scrollback.Hide }
+			}
+			goto done
 		}
 
 		switch state.Mode {

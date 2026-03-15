@@ -122,6 +122,7 @@ type (
 		View [][]rune
 		Pos int32
 		MaxLines int32
+		Hide bool
 	}
 	KeysState struct {
 		Keys map[int32]Key
