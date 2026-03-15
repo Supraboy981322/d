@@ -29,17 +29,45 @@ func calc_w_centered(w int) int32 {
 //helper to remove last item from slice
 //   NOTE: having to do this is moronic:
 //   'slice = slice[:len(slice)-1]'
-func pop[S ~[]T, T any](buf *S) {
+func pop[S ~[]T, T any](buf *S) T {
+	var item T
 	if len(*buf) > 0 {
+		item = (*buf)[len(*buf)-1]
 		*buf = (*buf)[:len(*buf)-1]
 	}
+	return item
 }
 //helper to remove first item from slice
 //   NOTE: see 'pop(...)'
-func shift[S ~[]T, T any](buf *S) {
+func shift[S ~[]T, T any](buf *S) T {
+	var item T
 	if len(*buf) > 0 {
+		item = (*buf)[0]
 		*buf = (*buf)[1:]
 	}
+	return item
+}
+//helper to append to a slice
+//  NOTE: same comment applies to this
+//   'slice = append(slice, thing)'
+func add[S ~[]T, T any](buf *S, thing ...T) {
+	*buf = append(*buf, thing...)
+}
+//helper empty a slice and return the old items
+//  NOTE: why isn't this a built-in?
+func drain[S ~[]T, T any](buf *S) []T {
+	var res []T
+	for len(*buf) > 0 {
+		add(&res, shift(buf))
+	}
+	return res
+}
+func filter[S ~[]T, T comparable](buf *S, thing T) {
+	l := len(*buf)
+	for _, a := range *buf {
+		if a != thing { add(buf, a) }
+	}
+	for range l { shift(buf) }
 }
 
 
@@ -119,4 +147,9 @@ func longest_line_len(s []rune) int {
 	}
 	//return the longest line found
 	return longest
+}
+//helper to flip a boolean
+//  NOTE: (why is this not a built-in?)
+func flip(thing *bool) {
+	*thing = !(*thing)
 }
