@@ -44,8 +44,8 @@ func main() {
   rl.SetTargetFPS(60)
 	rl.SetExitKey(rl.KeyNull)
 
+	//print "closing..." just before closing 
 	defer func() {
-		//print "closing..." and close
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.Black)
 		left_pad := float32((800-(10 * 10))/2)
