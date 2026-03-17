@@ -87,6 +87,7 @@ func wait(f func()bool) {
 		time.Sleep(1 * time.Millisecond)
 	}
 }
+
 //helper to get the longest line in a buffer containing newlines
 func longest_line_len(s []rune) int {
 	longest := 0

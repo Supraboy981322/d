@@ -2,6 +2,10 @@ github.com/Supraboy981322/keeper/golang v0.0.0-20260315233326-a4ced3aaee64 h1:7R
 github.com/Supraboy981322/keeper/golang v0.0.0-20260315233326-a4ced3aaee64/go.mod h1:6Clc2KaftwLPSCWOY1o7fMgUmYXH8IyBPgORSOUUHaI=
 github.com/Supraboy981322/keeper/golang v0.0.0-20260315234108-8acb34b2bd23 h1:IsX6Y8lyMl7dVOEdEL1bq9JHoN35Ht8/Ggnq4qOm0w4=
 github.com/Supraboy981322/keeper/golang v0.0.0-20260315234108-8acb34b2bd23/go.mod h1:6Clc2KaftwLPSCWOY1o7fMgUmYXH8IyBPgORSOUUHaI=
+github.com/Supraboy981322/keeper/golang v0.0.0-20260316014654-6cf921e1f843 h1:lQyQb/cqfdooeNoNw6YbN4pGpAfDEIYk45ij8NbugfM=
+github.com/Supraboy981322/keeper/golang v0.0.0-20260316014654-6cf921e1f843/go.mod h1:6Clc2KaftwLPSCWOY1o7fMgUmYXH8IyBPgORSOUUHaI=
+github.com/Supraboy981322/keeper/golang v0.0.0-20260316020439-e57e6e040dca h1:lDQq6D5ydiWEPuCXNNNBv3wXK6eJI//qWFkimrnvSwo=
+github.com/Supraboy981322/keeper/golang v0.0.0-20260316020439-e57e6e040dca/go.mod h1:6Clc2KaftwLPSCWOY1o7fMgUmYXH8IyBPgORSOUUHaI=
 github.com/ebitengine/purego v0.10.0 h1:QIw4xfpWT6GWTzaW5XEKy3HXoqrJGx1ijYHzTF0/ISU=
 github.com/ebitengine/purego v0.10.0/go.mod h1:iIjxzd6CiRiOG0UyXP+V1+jWqUXVjPKLAI0mRfJZTmQ=
 github.com/gen2brain/raylib-go/raylib v0.55.1 h1:1rdc10WvvYjtj7qijHnV9T38/WuvlT6IIL+PaZ6cNA8=

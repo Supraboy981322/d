@@ -3,7 +3,7 @@ module foo
 go 1.25.7
 
 require (
-	github.com/Supraboy981322/keeper/golang v0.0.0-20260315234108-8acb34b2bd23
+	github.com/Supraboy981322/keeper/golang v0.0.0-20260316020439-e57e6e040dca
 	github.com/gen2brain/raylib-go/raylib v0.55.1
 )
 

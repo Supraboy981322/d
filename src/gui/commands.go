@@ -19,10 +19,16 @@ func cmd() (error, Event) {
 	switch args[0] {
 		//quit (ignores any remaining args)
 		case "q": { state.Exit = true }
+		
+		//show/hide the scrollback buffer
 	  case "hide": { state.Scrollback.Hide = true }
 	  case "show": { state.Scrollback.Hide = false }
 
+		//toggle something
 	  case "toggle": { return toggle(args) }
+
+		//change a config setting
+	  case "set": { return setting(args) }
 
 		// TODO: more commands
 
@@ -35,12 +41,15 @@ func cmd() (error, Event) {
 	return nil, Event(NOP)
 }
 
+//helper to parse args
 func parse_args(in string) []string {
+	//state
 	var res []string
 	var esc, stringing bool 
 	var skipping rune
 	var mem []rune
 	var cmd_start int
+
 	drain := func() {
 		keeper.Add(&res, string(keeper.Drain(&mem)))
 	}
@@ -85,4 +94,16 @@ func toggle(args []string) (error, Event){
 		}
 	}
 	return nil, Event(NOP)
+}
+
+
+func setting(args []string) (error, Event) {
+	if len(args) < 2 {
+		return errors.New("not enough args, need something to change"), Event(ERR)
+	}
+	switch args[1] {
+	  case "server": { /* TODO: this */ }
+	}
+	// TODO: this
+	return nil,  Event(SETTING)
 }

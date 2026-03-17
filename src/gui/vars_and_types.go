@@ -9,6 +9,7 @@ const (
 	ESC
 	EXIT
 	ERR
+	SETTING
 )
 
 //modes
