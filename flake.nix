@@ -42,11 +42,11 @@
             libs = with pkgs; [
               go
 
-              # server
+              # server   TODO: rewrite in Zig
               brotli
               pkg-config
 
-              # proto desktop gui program
+              # proto native desktop gui program
               mesa
               libXi
               libXcursor
@@ -56,13 +56,72 @@
               wayland
               libxkbcommon
 
+              #disgusting fat electron app (this is some odious bloat)
+              #  HAVE JS DEVELOPERS NEVER HEARD OF STATICALLY LINKING?
+              nss
+              atk
+              nspr
+              dbus
+              cups #WHY THE HELL DOES ELECTRON NEED CUPS? (who's printing from an electron app?)
+              glib
+              gtk3
+              libGL
+              cairo
+              pango
+              expat
+              libgbm
+              libx11
+              libxcb
+              libxext
+              alsa-lib
+              electron
+              libxfixes
+              libxrandr
+              libxdamage
+              at-spi2-atk
+              nodejs-slim
+              libxkbcommon
+              libxcomposite
+
               # build tools
               bun
             ];
           in { 
           buildInputs = libs;
           packages = libs;
-          shellHook = ''
+          shellHook = /* bash */ ''
+            #who said arrays in Bash are bad? 
+            #  NOTE: DAMN, electron SUCKS
+            electron_libs=(
+              "${pkgs.nspr.out}"
+              "${pkgs.nss.out}"
+              "${pkgs.glib.out}"
+              "${pkgs.atk.out}"
+              "${pkgs.at-spi2-atk.out}"
+              "${pkgs.cups.lib}"
+              "${pkgs.dbus.out}"
+              "${pkgs.dbus.lib}"
+              "${pkgs.cairo.out}"
+              "${pkgs.gtk3.out}"
+              "${pkgs.pango.out}"
+              "${pkgs.libx11.out}"
+              "${pkgs.libGL.out}"
+              "${pkgs.alsa-lib.out}"
+              "${pkgs.libxcomposite.out}"
+              "${pkgs.libxdamage.out}"
+              "${pkgs.libxext.out}"
+              "${pkgs.libxfixes.out}"
+              "${pkgs.libxrandr.out}"
+              "${pkgs.libgbm.out}"
+              "${pkgs.expat.out}"
+              "${pkgs.libxcb.out}"
+              "${pkgs.libxkbcommon.out}"
+            )
+            for lib in "''${electron_libs[@]}"; do
+              export LD_LIBRARY_PATH+=":$lib/lib"
+              export PATH+=":$lib/bin"
+            done
+
             REPO_ROOT="$(git rev-parse --show-toplevel)"
             build() (
               set -eou pipefail
