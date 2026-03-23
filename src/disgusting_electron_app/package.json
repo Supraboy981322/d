@@ -1,0 +1,23 @@
+{
+  "name": "d client",
+  "version": "1.0.0",
+  "description": "disgusting fat electron version of the d client",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "d client",
+    "electron (gross)",
+    "minimal",
+    "no framework",
+    "no ai"
+  ],
+  "author": "me",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "electron": "^41.0.3"
+  }
+}
