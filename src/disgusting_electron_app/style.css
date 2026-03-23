@@ -24,7 +24,7 @@ code {
 em { font-style: italic }
 strong { font-weight: bold }
 
-#B {
+#to_btm {
   right: 0;
   bottom: 0;
   width: 2.5ch;
@@ -44,20 +44,19 @@ strong { font-weight: bold }
   user-select: none;
 }
 
-#p {
+#page {
   width: 100vw;
   height: 100vh;
-  &> #b {
+  &> #board {
     width:100vw;
     padding-bottom: 5em;
     overflow-y: scroll;
     box-sizing: border-box;
     height: 100vh;
     display: flex;
-    scroll-behavior: smooth;
     text-align: text-bottom;
     flex-direction: column;
-    &>.M {
+    &>input.msg {
       background-color: #333;
       border: 0.1em solid #777;
       border-radius: 1em;
@@ -70,12 +69,12 @@ strong { font-weight: bold }
       bottom: 0;
       height: 3em;
     }
-    &> .c {
+    &> .msg_container {
       margin-top: auto; 
-      &> .m {
+      &> div.msg {
         display: block;
         margin: 1em;
-        &> .T { 
+        &> .timestamp { 
           background-color: #999;
           color: #000;
           margin-right: 1em;
@@ -116,4 +115,18 @@ strong { font-weight: bold }
     cursor: pointer;
     user-select: none;
   }
+}
+
+#mode {
+  display: block;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  margin-left: 1em;
+  margin-bottom: 0.25em;
+  background-color: black;
+  padding: 0.25em;
+  width: fit-content;
+  height: fit-content;
+  border-radius: 0.25em;
 }

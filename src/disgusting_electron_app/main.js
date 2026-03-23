@@ -46,6 +46,8 @@ app.whenReady().then (() => {
     process.exit(1);
   });
 
+  ipcMain.handle("quit", process.exit);
+
   ipcMain.handle("set_config", async (event, conf) => {
     console.log("triggered set_config()");
     let conf_dir = path.join(app.getPath("home"), ".config", "Supraboy981322", "d");
