@@ -59,7 +59,7 @@ async function send(msg) {
       throw new Error("SERVER ERR");
 
     let p = (new DOMParser())
-          .parseFromString(await resp.text(), "text/html");
+          .parseFromString(await resp.text(), "text/html"),
       t = p.querySelector("p");
     msg_rendered = t === null ? p.body.innerHTML : t.innerHTML;
   } catch (e) {
