@@ -13,7 +13,6 @@ function createWindow() {
   });
   ze_window.loadFile("idx.html");
   ze_window.removeMenu();
-  mainWindow.webContents.openDevTools();
 }
 
 app.whenReady().then (() => {
