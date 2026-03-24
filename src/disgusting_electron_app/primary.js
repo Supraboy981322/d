@@ -449,6 +449,7 @@ function popup(msg, is_error) {
   let close_btn = document.createElement("button");
   container.appendChild(close_btn);
   close_btn.innerText = "close (popup)";
+  close_btn.addEventListener("click", () => container.remove());
 
   set_mode("normal");
 }
