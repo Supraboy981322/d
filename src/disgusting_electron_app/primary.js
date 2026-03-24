@@ -134,6 +134,7 @@ async function construct() {
   document.body.appendChild(mode_indicator);
   mode_indicator.id = "mode";
   set_mode(mode);
+  clock();
 }
 
 async function send(msg) {
@@ -481,7 +482,7 @@ function get_all_elem(selector) {
   return document.querySelectorAll(selector);
 }
 
-setInterval(() => {
+function clock() {
   var time_elem = document.querySelector("#board > #time");
   if (!exists(time_elem)) {
     time_elem = document.createElement("div");
@@ -500,4 +501,5 @@ setInterval(() => {
   }).format(
     Date.now()
   );
-}, 1000);
+}
+setInterval(clock, 1000);
