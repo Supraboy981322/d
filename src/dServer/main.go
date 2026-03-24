@@ -265,6 +265,7 @@ func serveClient(w http.ResponseWriter, r *http.Request) {
 func post(w http.ResponseWriter, r *http.Request) {
 	//CORS
 	if r.Method == http.MethodOptions {
+		w.WriteHeader(200)
 		w.Header().Set("Access-Control-Allow-Headers", "echo, Content-Type")
 		return
 	}
@@ -273,6 +274,7 @@ func post(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.WriteHeader(405)
 		w.Write([]byte("bad method"));
+		fmt.Printf("%d\n", r.Method)
 		return
 	}
 
