@@ -199,9 +199,10 @@ async function sync_board() {
       //return if server has same amount 
       if (JSON.parse(resp.headers.get("have")) === total_entries)
         return;
-      else if (exists(resp.headers.get("have")))
+      else if (exists(resp.headers.get("have"))) {
         update_board();
-      else
+        return
+      } else
         throw new Error(
           `SERVER ERR: ${
             await resp.text()
@@ -212,11 +213,13 @@ async function sync_board() {
           })`
         );
     }
-    let json = await resp.json();
-    if (json.length > 0) json.forEach((msg) => {
-      new_msg_elem(msg);
-      console.log(msg);
-    });
+    try {
+      let json = await resp.json();
+      if (json.length > 0) json.forEach((msg) => {
+        new_msg_elem(msg);
+        console.log(msg);
+      });
+    } catch { return }
   } catch (e) {
     console.log(e);
     popup(e, true);
