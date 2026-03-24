@@ -229,7 +229,8 @@ func serveClient(w http.ResponseWriter, r *http.Request) {
 	//chk the mtd type
 	//  if GET, it's valid
 	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusTeapot)
+		w.WriteHeader(405)
+		w.Write([]byte("method not allowed"))
 		return
 	}
 
@@ -265,7 +266,8 @@ func post(w http.ResponseWriter, r *http.Request) {
 	//chk the mtd type
 	//  if POST, it's valid 
 	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusTeapot)
+		w.WriteHeader(405)
+		w.Write([]byte("bad method"));
 		return
 	}
 
