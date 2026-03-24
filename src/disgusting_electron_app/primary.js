@@ -237,6 +237,7 @@ async function update_board() {
       throw new Error("SERVER ERR");
 
     let json = await resp.json();
+    total_entries = 0;
     json.forEach(msg => new_msg_elem(msg));
   } catch (e) {
     popup(e, true);
