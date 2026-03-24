@@ -183,7 +183,7 @@ async function send(msg) {
     minute: "2-digit",
     second: "2-digit",
   }).format(
-    new Date(Date.now())
+    Date.now()
   );
 
   new_msg_elem({
@@ -498,6 +498,6 @@ setInterval(() => {
     minute: "2-digit",
     second: "2-digit",
   }).format(
-    new Date(Date.now())
+    Date.now()
   );
 }, 1000);
