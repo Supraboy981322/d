@@ -6,7 +6,7 @@ var mode = "normal";
 var total_entries = 0;
 
 function exists(thing) {
-  return thing !== undefined && thing !== null
+  return thing !== undefined && thing !== null;
 }
 
 async function set_config() {
@@ -71,7 +71,7 @@ async function set_server(cont) {
   let url = document.querySelector(`.conf_popup_cont > input[type="text"]`).value;
   if (url === "") {
     resp_msg.innerText = "url is empty";
-    return
+    return;
   }
   console.log(url);
 
@@ -88,7 +88,7 @@ async function set_server(cont) {
     update_board();
   } catch (e) {
     resp_msg.innerText = e;
-    return
+    return;
   }
 }
 
@@ -98,7 +98,7 @@ async function startup () {
   if (start_ok)
     await update_board();
 }
-startup()
+startup();
 
 async function construct() {
   let page_container = document.createElement("div");
@@ -126,7 +126,7 @@ async function construct() {
   msg_box.addEventListener("click", () => set_mode("insert"));
 
   let to_btm_btn = document.createElement("button");
-  document.body.appendChild(to_btm_btn)
+  document.body.appendChild(to_btm_btn);
   to_btm_btn.id = "to_btm";
   to_btm_btn.onclick = () => scroll(false);
   to_btm_btn.innerText = "▼";
@@ -138,14 +138,14 @@ async function construct() {
 }
 
 async function send(msg) {
-  if (!start_ok) return
+  if (!start_ok) return;
   let msg_box = document.querySelector("input.msg");
   if (!exists(msg))
     msg = msg_box.value;
 
   //return if empty message
   if (!exists(msg) || msg === "")
-    return
+    return;
 
   msg_box.value = "";
 
@@ -162,8 +162,8 @@ async function send(msg) {
 
     let p = (new DOMParser())
           .parseFromString(await resp.text(), "text/html"),
-      t = p.querySelector("p");
-    msg_rendered = t === null ? p.body.innerHTML : t.innerHTML;
+        t = p.querySelector("p");
+    msg_rendered = (t === null) ? p.body.innerHTML : t.innerHTML;
   } catch (e) {
     popup(e, true);
     return;
@@ -175,7 +175,7 @@ async function send(msg) {
     minute: "2-digit",
     second: "2-digit",
   }).format(
-      new Date( Date.now() )
+    new Date(Date.now())
   );
 
   new_msg_elem({
@@ -214,13 +214,13 @@ async function sync_board() {
     }
     let json = await resp.json();
     if (json.length > 0) json.forEach((msg) => {
-      new_msg_elem(msg)
+      new_msg_elem(msg);
       console.log(msg);
     });
   } catch (e) {
     console.log(e);
     popup(e, true);
-    return
+    return;
   }
 }
 
@@ -268,9 +268,8 @@ function new_msg_elem(msg) {
   msg_container.appendChild(msg_txt);
   msg_txt.className = "txt";
   msg_txt.innerHTML = msg.Msg;
-  scroll(false)
+  scroll(false);
 }
-
 
 //set the mode to insert if the input box is clicked (or normal if not)
 document.addEventListener("click", (event) => {
@@ -292,7 +291,7 @@ document.addEventListener("keydown", (event) => {
     //unfocus element if escape key, otherwise back-off 
     if (event.key === "Escape") {
       event.target.blur();
-      set_mode("normal")
+      set_mode("normal");
     } else
       return
   }
@@ -390,22 +389,22 @@ async function do_cmd() {
     }
   }
   if (p.mem.length > 0)
-    p.res.push(p.mem)
+    p.res.push(p.mem);
   input.value = "";
   if (p.res.length < 1) 
-    return
+    return;
 
   set_mode("normal"); 
   sw: switch (p.res[0]) {
     case "set": {
       if (p.res.length < 3) {
         popup("missing args: need something to set", false);
-        return
+        return;
       }
       switch (p.res[1]) {
         case "server": {
-          let old = p.res[2] 
-          conf.server = p.res[2]
+          let old = p.res[2];
+          conf.server = p.res[2];
           if (!(await chk_server())) {
             popup("couldn't reach server; reverting to previous server", false); 
             conf.server = old;
