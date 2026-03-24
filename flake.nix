@@ -127,12 +127,16 @@
               set -eou pipefail
               old_dir="$PWD"
               cd "$REPO_ROOT/src/dServer/web"
-              bun run build.ts || exit
+              bun run build.ts 2>&1 | sed 's/^/\t/g' 
               cd ..
               printf "uncompressed size: %d\n" "$(cat web_built/*.html | wc -c)"
               printf "gzipped size: %d\n" "$(cat web_built/*.html | gzip -c9k | wc -c)"
               printf "brotli size: %d\n" "$(cat web_built/*.html | brotli -cq 11 -w 24 | wc -c)"
-              go build || true
+              printf "building server"
+              go build -x -v 2>&1 | sed 's/^/\t/g'
+              cd "$REPO_ROOT/src/disgusting_electron_app"
+              printf "building the disgusting electron app"
+              npm run dist 2>&1 | sed 's/^/\t/g'
               cd $old_dir
             )
             run() (
