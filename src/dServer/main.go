@@ -263,18 +263,11 @@ func serveClient(w http.ResponseWriter, r *http.Request) {
 }
 
 func post(w http.ResponseWriter, r *http.Request) {
-	//CORS
-	if r.Method == http.MethodOptions {
-		w.WriteHeader(200)
-		w.Header().Set("Access-Control-Allow-Headers", "echo, Content-Type")
-		return
-	}
 	//chk the mtd type
 	//  if POST, it's valid 
 	if r.Method != http.MethodPost {
 		w.WriteHeader(405)
 		w.Write([]byte("bad method"));
-		fmt.Printf("%d\n", r.Method)
 		return
 	}
 
