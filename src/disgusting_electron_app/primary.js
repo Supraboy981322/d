@@ -55,7 +55,7 @@ async function set_config() {
     console.log("popup created"); 
   }
 
-  if (conf.server[-1] !== "/")
+  if (conf.server[-1] === "/")
     conf.server = conf.server.slice(0, -1);
 
 }
@@ -166,6 +166,7 @@ async function send(msg) {
     msg_rendered = (t === null) ? p.body.innerHTML : t.innerHTML;
   } catch (e) {
     popup(e, true);
+    console.error(`send(): err{${e}} server{${conf.server}}`);
     return;
   }
 
@@ -223,6 +224,7 @@ async function sync_board() {
   } catch (e) {
     console.log(e);
     popup(e, true);
+    console.error(`sync_board(): err{${e}} server{${conf.server}}`);
     return;
   }
 }
@@ -241,6 +243,7 @@ async function update_board() {
     json.forEach(msg => new_msg_elem(msg));
   } catch (e) {
     popup(e, true);
+    console.error(`update_board(): err{${e}} server{${conf.server}}`);
     return;
   }
 }
