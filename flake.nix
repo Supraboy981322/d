@@ -90,6 +90,7 @@
           buildInputs = libs;
           packages = libs;
           shellHook = /* bash */ ''
+            export ELECTRON_ENABLE_LOGGING=true
             #who said arrays in Bash are bad? 
             #  NOTE: DAMN, electron SUCKS
             electron_libs=(
