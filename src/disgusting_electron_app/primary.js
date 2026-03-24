@@ -23,7 +23,7 @@ async function set_config() {
   if (!exists(conf))
     window.api.panic("CONFIG UNDEFINED");
 
-  if (conf.server === "https://[your server address]") {
+  if (conf.server?.includes("your server address")) {
     start_ok = false;
     console.log("server url bad"); 
 
@@ -57,7 +57,6 @@ async function set_config() {
 
   if (conf.server[-1] === "/")
     conf.server = conf.server.slice(0, -1);
-
 }
 
 async function set_server(cont) {
@@ -158,7 +157,15 @@ async function send(msg) {
     });
 
     if (!resp.ok)
-      throw new Error("SERVER ERR");
+      throw new Error(
+        `SERVER ERR: ${
+          await resp.text()
+        } (${
+          resp.status
+        } ; ${
+          resp.error
+        })`
+      );
 
     let p = (new DOMParser())
           .parseFromString(await resp.text(), "text/html"),
@@ -208,7 +215,7 @@ async function sync_board() {
           `SERVER ERR: ${
             await resp.text()
           } (${
-            resp.code
+            resp.status
           } ; ${
             resp.error
           })`
@@ -216,13 +223,11 @@ async function sync_board() {
     }
     try {
       let json = await resp.json();
-      if (json.length > 0) json.forEach((msg) => {
-        new_msg_elem(msg);
-        console.log(msg);
-      });
+      if (json.length > 0) json.forEach(
+        (msg) => new_msg_elem(msg)
+      );
     } catch { return }
   } catch (e) {
-    console.log(e);
     popup(e, true);
     console.error(`sync_board(): err{${e}} server{${conf.server}}`);
     return;
@@ -236,7 +241,15 @@ async function update_board() {
       method: "GET",
     });
     if (!resp.ok)
-      throw new Error("SERVER ERR");
+      throw new Error(
+        `SERVER ERR: ${
+          await resp.text()
+        } (${
+          resp.status
+        } ; ${
+          resp.error
+        })`
+      );
 
     let json = await resp.json();
     total_entries = 0;
@@ -467,3 +480,24 @@ function get_elem(selector) {
 function get_all_elem(selector) {
   return document.querySelectorAll(selector);
 }
+
+setInterval(() => {
+  var time_elem = document.querySelector("#board > #time");
+  if (!exists(time_elem)) {
+    time_elem = document.createElement("div");
+    document.querySelector("#board").appendChild(time_elem);
+    time_elem.id = "time";
+
+    let time_txt = document.createElement("p");
+    time_elem.appendChild(time_txt);
+    time_txt.className = "txt";
+  }
+  let time_txt = time_elem?.querySelector("p.txt");
+  time_txt.innerText = new Intl.DateTimeFormat("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).format(
+    new Date(Date.now())
+  );
+}, 1000);
