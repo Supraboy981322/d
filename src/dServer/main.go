@@ -209,6 +209,7 @@ func send_new(w http.ResponseWriter, r *http.Request) {
 			A_TERNARY_WOULDVE_BEEN_GREAT_2, len(todays_lines),
 			A_TERNARY_WOULDVE_BEEN_GREAT,
 		)
+		w.Header().Set("have", strconv.Itoa(len(todays_lines)))
 		http.Error(w, msg, 403)
 		return
 	}
