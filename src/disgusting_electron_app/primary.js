@@ -55,7 +55,7 @@ async function set_config() {
     console.log("popup created"); 
   }
 
-  if (conf.server[-1] === "/")
+  if (conf.server.at(-1) === "/")
     conf.server = conf.server.slice(0, -1);
 }
 
