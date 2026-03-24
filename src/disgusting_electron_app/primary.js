@@ -3,6 +3,11 @@
 var conf; 
 var start_ok = true;
 var mode = "normal";
+var total_entries = 0;
+
+function exists(thing) {
+  return thing !== undefined && thing !== null
+}
 
 async function set_config() {
   console.log("getting config"); 
@@ -15,7 +20,7 @@ async function set_config() {
   }
   console.log("got config"); 
 
-  if (conf === undefined)
+  if (!exists(conf))
     window.api.panic("CONFIG UNDEFINED");
 
   if (conf.server === "https://[your server address]") {
@@ -57,7 +62,7 @@ async function set_config() {
 
 async function set_server(cont) {
   let resp_msg = document.querySelector(".conf_popup_cont > #resp_msg");
-  if (resp_msg === undefined || resp_msg === null) {
+  if (!exists(resp_msg)) {
     resp_msg = document.createElement("p");
     cont.appendChild(resp_msg);
     resp_msg.id = "resp_msg";
@@ -135,8 +140,12 @@ async function construct() {
 async function send(msg) {
   if (!start_ok) return
   let msg_box = document.querySelector("input.msg");
-  if (msg === undefined)
+  if (!exists(msg))
     msg = msg_box.value;
+
+  //return if empty message
+  if (!exists(msg) || msg === "")
+    return
 
   msg_box.value = "";
 
@@ -156,7 +165,7 @@ async function send(msg) {
       t = p.querySelector("p");
     msg_rendered = t === null ? p.body.innerHTML : t.innerHTML;
   } catch (e) {
-    alert(e);
+    popup(e, true);
     return;
   }
 
@@ -175,8 +184,48 @@ async function send(msg) {
   });
 }
 
+setInterval(sync_board, 30000);
+
+async function sync_board() {
+  if (!start_ok) return;
+  try {
+    let resp = await fetch(`${conf.server}/sync`, {
+      headers: {
+        "have": total_entries,
+      },
+      method: "GET",
+    });
+    if (!resp.ok) {
+      //return if server has same amount 
+      if (JSON.parse(resp.headers.get("have")) === total_entries)
+        return;
+      else if (exists(resp.headers.get("have")))
+        update_board();
+      else
+        throw new Error(
+          `SERVER ERR: ${
+            await resp.text()
+          } (${
+            resp.code
+          } ; ${
+            resp.error
+          })`
+        );
+    }
+    let json = await resp.json();
+    if (json.length > 0) json.forEach((msg) => {
+      new_msg_elem(msg)
+      console.log(msg);
+    });
+  } catch (e) {
+    console.log(e);
+    popup(e, true);
+    return
+  }
+}
+
 async function update_board() {
-  if (!start_ok) return
+  if (!start_ok) return;
   try {
     let resp = await fetch(`${conf.server}/today`, {
       method: "GET",
@@ -187,12 +236,12 @@ async function update_board() {
     let json = await resp.json();
     json.forEach(msg => new_msg_elem(msg));
   } catch (e) {
-    alert(e);
+    popup(e, true);
     return;
   }
 }
 
-function scroll(to_top, n){
+function scroll(to_top){
   let board = document.querySelector("#board");
   board.setAttribute("style", "scroll-behavior: smooth;");
   if (to_top)
@@ -203,6 +252,7 @@ function scroll(to_top, n){
 }
 
 function new_msg_elem(msg) {
+  total_entries++;
   let msg_board = document.querySelector(".msg_container");
   let msg_container = document.createElement("div");
   msg_board.appendChild(msg_container);
@@ -222,11 +272,19 @@ function new_msg_elem(msg) {
 }
 
 
+//set the mode to insert if the input box is clicked (or normal if not)
+document.addEventListener("click", (event) => {
+  if (event.target.tagName === "INPUT" && event.target.className === "msg")
+    set_mode("insert");
+  else
+    set_mode("normal");
+});
+
 //Vim bindings
 var last_key = undefined; //keeps track for longer than 'event.repeat'
 document.addEventListener("keydown", (event) => {
   //ignore stupid JS behavior 
-  if (event.key === undefined || event.key === null)
+  if (!exists(event.key))
     return;
   
   let currently_focused = document.activeElement.tagName.toLowerCase();
@@ -257,6 +315,15 @@ document.addEventListener("keydown", (event) => {
     case "G": { scroll(false) } break sw;
     case "g": { if (last_key === event.key) scroll(true) } break sw;
 
+    //close any and all popups
+    case "q": {
+      [ ...get_all_elem("div.popup"),
+        ...get_all_elem("div.error")
+      ].forEach(
+        (elem) => elem?.remove()
+      );
+    } break sw;
+
     default: {
       last_key = event.key; //to bad this crappy language doesn't have defer
       return
@@ -270,11 +337,13 @@ function set_mode(m) {
   let input = document.querySelector("input.msg");
   if (mode === "insert" || mode === "command")
     input.focus();
+  else
+    input.blur();
   document.querySelector("#mode").innerText = `--${mode}--`;
 }
 
 //string parsing in JS? HERESY
-function do_cmd() {
+async function do_cmd() {
   let input = document.querySelector("input.msg");
   let p = {
     esc: false,
@@ -293,7 +362,7 @@ function do_cmd() {
     }
     sw: switch (char) {
       case "'": case "\"": {
-        if (p.str_type === char || p.str_type === undefined) {
+        if (p.str_type === char || !exists(p.str_type)) {
           if (p.stringing) {
             p.res.push(p.mem);
             p.mem = "";
@@ -329,16 +398,65 @@ function do_cmd() {
   set_mode("normal"); 
   sw: switch (p.res[0]) {
     case "set": {
-      if (p.res.length < 2) {
-        alert("missing args: need something to set");
+      if (p.res.length < 3) {
+        popup("missing args: need something to set", false);
         return
       }
       switch (p.res[1]) {
-        case "server": { set_config() } break sw;
-        default: { alert(`invalid arg: I don't know how to set "${p.res[1]}"`) };
+        case "server": {
+          let old = p.res[2] 
+          conf.server = p.res[2]
+          if (!(await chk_server())) {
+            popup("couldn't reach server; reverting to previous server", false); 
+            conf.server = old;
+          }
+        } break sw;
+        default: { popup(`invalid arg: I don't know how to set "${p.res[1]}"`, false) };
       }
     } break sw;
-    case "q": { window.api.quit() } break sw;
-    default: { alert(`invalid command: "${p.res[0]}"`) }
+    case "refresh": { update_board() } break sw;
+    case "sync": { sync_board() } break sw;
+    case "q": case ":q": { window.api.quit() } break sw;
+    default: { popup(`invalid command: "${p.res[0]}"`, false) }
   }
+}
+
+//helper to check if the configured server address is valid
+async function chk_server() {
+  let url = conf.server;
+  if (!exists(url))
+    return false;
+  try {
+    let resp = await fetch(url); 
+    if (!resp.ok)
+      throw new Error("url is invalid or unreachable");
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function popup(msg, is_error) {
+  let container = document.createElement("div");
+  document.body.appendChild(container);
+  container.className = (exists(is_error) && is_error) ? "error" : "popup";
+  container.focus();
+  
+  let msg_elem = document.createElement("p");
+  container.appendChild(msg_elem);
+  msg_elem.innerText = msg;
+
+  let close_btn = document.createElement("button");
+  container.appendChild(close_btn);
+  close_btn.innerText = "close (popup)";
+
+  set_mode("normal");
+}
+
+function get_elem(selector) {
+  return document.querySelector(selector);
+}
+
+function get_all_elem(selector) {
+  return document.querySelectorAll(selector);
 }
