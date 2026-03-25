@@ -1,12 +1,22 @@
 * { all: unset; }
 
+:root {
+  --bg: #000;
+  --text: #fff;
+  --complementary_one: #555;
+  --complementary_one_alt: #533;
+  --complementary_two: #333;
+  --complementary_three: #777;
+  --complementary_four: #999;
+}
+
 :root, body {
   padding: 0;
   margin: 0;
   font-family: monospace;
   font-size: 1.175em;
-  background-color: black;
-  color: white;
+  background-color: var(--bg);
+  color: var(--text);
 }
 
 *::-webkit-scrollbar {
@@ -17,7 +27,7 @@
 script, head { display: none; }
 
 code {
-  background-color: #555;
+  background-color: var(--complementary_one);
   padding: 0 0.2em;
   border-radius: 0.25em;
 }
@@ -37,8 +47,8 @@ strong { font-weight: bold }
   border-radius: 50%;
   margin-bottom: calc(5vh + 2.4em);
   box-sizing: border-box;
-  background-color: #333;
-  border: 0.1em solid #777;
+  background-color: var(--complementary_two);
+  border: 0.1em solid var(--complementary_three);
   padding: 0 0.375em;
   cursor: pointer;
   user-select: none;
@@ -47,6 +57,7 @@ strong { font-weight: bold }
 #page {
   width: 100vw;
   height: 100vh;
+  background: var(--bg);
   &> #board {
     width:100vw;
     padding-bottom: 5em;
@@ -55,10 +66,11 @@ strong { font-weight: bold }
     height: 100vh;
     display: flex;
     text-align: text-bottom;
+    background: var(--bg);
     flex-direction: column;
     &>input.msg {
-      background-color: #333;
-      border: 0.1em solid #777;
+      background-color: var(--complementary_two);
+      border: 0.1em solid var(--complementary_three);
       border-radius: 1em;
       width: 95vw;
       box-sizing: border-box;
@@ -72,11 +84,12 @@ strong { font-weight: bold }
     &> .msg_container {
       margin-top: auto; 
       &> div.msg {
+        color: var(--text);
         display: block;
         margin: 1em;
         &> .timestamp { 
-          background-color: #999;
-          color: #000;
+          background-color: var(--complementary_four);
+          color: var(--bg);
           margin-right: 1em;
           padding: 0.2em;
           border-radius: 0.3em;
@@ -87,7 +100,7 @@ strong { font-weight: bold }
 }
 
 .conf_popup_cont {
-  background-color: #555;
+  background-color: var(--complementar_one);
   display: block;
   position: fixed;
   inset: 0px;
@@ -103,8 +116,8 @@ strong { font-weight: bold }
     border-radius: 0.25em;
   }
   input[type="text"], button {
-    background-color: black;
-    color: white;
+    background-color: var(--bg);
+    color: var(--text);
     padding: 0.15em;
   }
   button {
@@ -124,7 +137,7 @@ strong { font-weight: bold }
   left: 0;
   margin-left: 1em;
   margin-bottom: 0.25em;
-  background-color: black;
+  background-color: var(--bg);
   padding: 0.25em;
   width: fit-content;
   height: fit-content;
@@ -146,8 +159,8 @@ div.error, div.popup {
     display: block;
   }
   button {
-    background-color: black;
-    color: white;
+    background-color: var(--bg);
+    color: var(--text);
     overflow: hidden;
     border-radius: 0.25em;
     padding: 0.375em;
@@ -158,10 +171,10 @@ div.error, div.popup {
 }
 
 div.error {
-  background-color: #533;
+  background-color: var(--complementary_one_alt);
 }
 div.popup {
-  background-color: #555;
+  background-color: var(--complementary_one);
 }
 
 #board > div#time {
@@ -171,7 +184,7 @@ div.popup {
   right: 0;
   margin-right: 1em;
   margin-bottom: 0.25em;
-  background-color: black;
+  background-color: var(--bg);
   padding: 0.25em;
   width: fit-content;
   height: fit-content;
