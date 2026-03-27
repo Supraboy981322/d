@@ -8,7 +8,7 @@ var conf; //set by 'set_config()'
 var start_ok = true; //determines if background processes should run
 var mode = "normal"; //tracks the mode
 var total_entries = 0; //keeps of the current entries
-var scroll_pos = 0;
+var scroll_pos = -1;
 
 //helper to check if JS is being dumb 
 function exists(thing) {
@@ -338,16 +338,14 @@ function scroll(to_top, n) {
     if (to_top)
       n = 0;
     else
-      n = total_entries;
+      n = total_entries-1;
   }
 
   document.querySelectorAll("div.msg[selected]").forEach((elem) => {
     elem.removeAttribute("selected");
   });
 
-  if (n >= total_entries) n = total_entries;
-
-  let selected = document.querySelector(".msg_container").children[n-1];
+  let selected = document.querySelector(".msg_container").children[n];
   selected.scrollIntoView();
   selected.setAttribute("selected", "");
 }
@@ -355,10 +353,6 @@ function scroll(to_top, n) {
 //helper to create a new message
 function new_msg_elem(msg) {
   total_entries++;
-
-  document.querySelectorAll("div.msg[selected]").forEach((elem) => {
-    elem.removeAttribute("selected");
-  });
 
   let msg_board = document.querySelector(".msg_container");
   let msg_container = document.createElement("div");
@@ -415,7 +409,10 @@ document.addEventListener("keydown", (event) => {
 
     //basic movement
     case "j": case "k": {
-      scroll_pos += (event.key === "j") ? 1 : -1;
+      if (event.key === "j" && scroll_pos < total_entries-1)
+        scroll_pos++;
+      else if (event.key === "k" && scroll_pos > 0)
+        scroll_pos--;
       scroll(undefined, scroll_pos);
     } break sw;
 
