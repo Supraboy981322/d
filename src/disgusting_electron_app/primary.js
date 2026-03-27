@@ -76,6 +76,12 @@ async function set_config() {
   //removes any trailing '/'
   if (conf.server.at(-1) === "/")
     conf.server = conf.server.slice(0, -1);
+
+  Object.entries( //use empty obj if doesn't exist 
+    (exists(conf.colors)) ? conf.colors : {}
+  ).forEach(([name, val]) => {
+    document.documentElement.style.setProperty(`--${name}`, val);
+  });
 }
 
 //helper set the server in config
