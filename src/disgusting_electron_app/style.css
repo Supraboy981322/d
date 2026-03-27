@@ -92,6 +92,7 @@ strong { font-weight: bold }
           border-radius: 0.5em;
           background-color: var(--complementary_one);
           code { background-color: var(--bg); }
+          &> .timestamp { margin-left: -0.20em !important; }
         }
         &> .timestamp { 
           background-color: var(--complementary_four);
