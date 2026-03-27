@@ -8,7 +8,7 @@ var conf; //set by 'set_config()'
 var start_ok = true; //determines if background processes should run
 var mode = "normal"; //tracks the mode
 var total_entries = 0; //keeps of the current entries
-var scroll_pos = -1;
+var scroll_pos = 0;
 
 //helper to check if JS is being dumb 
 function exists(thing) {
@@ -184,7 +184,7 @@ async function construct() {
   let to_btm_btn = document.createElement("button");
   document.body.appendChild(to_btm_btn);
   to_btm_btn.id = "to_btm";
-  to_btm_btn.onclick = () => scroll(false);
+  to_btm_btn.onclick = () => scroll(false, null, true);
   to_btm_btn.innerText = "\u{25BC}";
   
   //container for mode indicator
@@ -342,17 +342,40 @@ function scroll(to_top, n, smooth) {
       n = 0;
     else
       n = total_entries-1;
+    scroll_pos = n;
   }
 
   document.querySelectorAll("div.msg[selected]").forEach((elem) => {
     elem.removeAttribute("selected");
   });
 
-  let selected = document.querySelector(".msg_container").children[n];
-  selected.scrollIntoView();
-  selected.setAttribute("selected", "");
+  let container = document.querySelector(".msg_container");
+  let selected = container.children[n];
+  selected?.scrollIntoView();
+  selected?.setAttribute("selected", "");
   if (smooth)
     board.removeAttribute("style");
+
+  let btn = document.getElementById("to_btm");
+
+  //get the the last entry
+  let last; {
+    var i = 1; while (!exists(last) && i >= 0) {
+      last = container.children[container.children.length - i];
+      i--;
+    }
+  }
+
+  if (container.children[scroll_pos] === last)
+    btn?.remove();
+  else if (!exists(btn)) {
+    //button to go to bottom of board
+    let btn = document.createElement("button");
+    document.body.appendChild(btn);
+    btn.id = "to_btm";
+    btn.onclick = () => scroll(false, null, true);
+    btn.innerText = "\u{25BC}";
+  }
 }
 
 //helper to create a new message
@@ -376,8 +399,8 @@ function new_msg_elem(msg) {
   msg_txt.className = "txt";
   msg_txt.innerHTML = msg.Msg;
 
-  scroll(false); //scrolls to the bottom
-  scroll_pos++;
+  scroll(false, null, true); //scrolls to the bottom
+  scroll_pos = total_entries - 1;
 }
 
 //set the mode to insert if the input box is clicked (or normal if not)
@@ -415,7 +438,7 @@ document.addEventListener("keydown", (event) => {
     //basic movement
     case "j": case "k": {
       if (event.key === "j" && scroll_pos < total_entries-1)
-        scroll_pos += (event.repeat && scroll_pos - total_entries - 1 > 1) ? 2 : 1;
+        scroll_pos += (event.repeat && scroll_pos - total_entries > 2) ? 2 : 1;
       else if (event.key === "k" && scroll_pos > 0)
         scroll_pos -= (event.repeat && scroll_pos > 1) ? 2 : 1;
       scroll(null, scroll_pos, !event.repeat);
