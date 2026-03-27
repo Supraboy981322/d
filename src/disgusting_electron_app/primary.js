@@ -333,9 +333,7 @@ async function update_board() {
 }
 
 //helper to scroll the board to top/bottom
-function scroll(to_top, n){
-  let board = document.querySelector("#board");
-  board.setAttribute("style", "scroll-behavior: smooth;");
+function scroll(to_top, n) {
   if (!exists(n)) {
     if (to_top)
       n = 0;
@@ -352,8 +350,6 @@ function scroll(to_top, n){
   let selected = document.querySelector(".msg_container").children[n-1];
   selected.scrollIntoView();
   selected.setAttribute("selected", "");
-
-  board.removeAttribute("style");
 }
 
 //helper to create a new message
