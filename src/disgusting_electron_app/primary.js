@@ -410,9 +410,9 @@ document.addEventListener("keydown", (event) => {
     //basic movement
     case "j": case "k": {
       if (event.key === "j" && scroll_pos < total_entries-1)
-        scroll_pos++;
+        scroll_pos+= (event.repeat) ? 2 : 1;
       else if (event.key === "k" && scroll_pos > 0)
-        scroll_pos--;
+        scroll_pos -= (event.repeat) ? 2 : 1;
       scroll(undefined, scroll_pos);
     } break sw;
 
