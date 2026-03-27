@@ -332,7 +332,7 @@ async function update_board() {
   }
 }
 
-//helper to scroll the board to top/bottom
+//helper to scroll the board
 function scroll(to_top, n) {
   if (!exists(n)) {
     if (to_top)
