@@ -333,7 +333,10 @@ async function update_board() {
 }
 
 //helper to scroll the board
-function scroll(to_top, n) {
+function scroll(to_top, n, smooth) {
+  let board = document.querySelector("#board");
+  if (smooth)
+    board.setAttribute("style", "scroll-behavior: smooth;");
   if (!exists(n)) {
     if (to_top)
       n = 0;
@@ -348,6 +351,8 @@ function scroll(to_top, n) {
   let selected = document.querySelector(".msg_container").children[n];
   selected.scrollIntoView();
   selected.setAttribute("selected", "");
+  if (smooth)
+    board.removeAttribute("style");
 }
 
 //helper to create a new message
@@ -410,15 +415,15 @@ document.addEventListener("keydown", (event) => {
     //basic movement
     case "j": case "k": {
       if (event.key === "j" && scroll_pos < total_entries-1)
-        scroll_pos+= (event.repeat) ? 2 : 1;
+        scroll_pos += (event.repeat && scroll_pos - total_entries - 1 > 1) ? 2 : 1;
       else if (event.key === "k" && scroll_pos > 0)
-        scroll_pos -= (event.repeat) ? 2 : 1;
-      scroll(undefined, scroll_pos);
+        scroll_pos -= (event.repeat && scroll_pos > 1) ? 2 : 1;
+      scroll(null, scroll_pos, !event.repeat);
     } break sw;
 
     //to start or end of scrollback
-    case "G": { scroll(false) } break sw;
-    case "g": { if (last_key === event.key) scroll(true) } break sw;
+    case "G": { scroll(false, null, true) } break sw;
+    case "g": { if (last_key === event.key) scroll(true, null, true) } break sw;
 
     //close any and all popups
     case "q": {
