@@ -8,6 +8,7 @@ var conf; //set by 'set_config()'
 var start_ok = true; //determines if background processes should run
 var mode = "normal"; //tracks the mode
 var total_entries = 0; //keeps of the current entries
+var scroll_pos = 0;
 
 //helper to check if JS is being dumb 
 function exists(thing) {
@@ -332,13 +333,26 @@ async function update_board() {
 }
 
 //helper to scroll the board to top/bottom
-function scroll(to_top){
+function scroll(to_top, n){
   let board = document.querySelector("#board");
   board.setAttribute("style", "scroll-behavior: smooth;");
-  if (to_top)
-    document.querySelector("#board").scrollTop = 0;
-  else
-    board.scrollTop = board.scrollHeight; 
+  if (!exists(n)) {
+    if (to_top)
+      n = 0;
+    else
+      n = total_entries;
+  }
+
+  document.querySelectorAll("div.msg[selected]").forEach((elem) => {
+    elem.removeAttribute("selected");
+  });
+
+  if (n >= total_entries) n = total_entries;
+
+  let selected = document.querySelector(".msg_container").children[n-1];
+  selected.scrollIntoView();
+  selected.setAttribute("selected", "");
+
   board.removeAttribute("style");
 }
 
@@ -368,6 +382,7 @@ function new_msg_elem(msg) {
   msg_txt.innerHTML = msg.Msg;
 
   scroll(false); //scrolls to the bottom
+  scroll_pos++;
 }
 
 //set the mode to insert if the input box is clicked (or normal if not)
@@ -404,10 +419,8 @@ document.addEventListener("keydown", (event) => {
 
     //basic movement
     case "j": case "k": {
-      document.querySelector("#board").scrollBy({
-        top: (event.key === "j") ? 100 : -100,
-        behavior: (event.repeat) ? undefined : "smooth",
-      });
+      scroll_pos += (event.key === "j") ? 1 : -1;
+      scroll(undefined, scroll_pos);
     } break sw;
 
     //to start or end of scrollback
