@@ -86,7 +86,13 @@ strong { font-weight: bold }
       &> div.msg {
         color: var(--text);
         display: block;
-        margin: 1em;
+        margin: 0.5em;
+        padding: 0.5em;
+        &[selected] {
+          border-radius: 0.5em;
+          background-color: var(--complementary_one);
+          code { background-color: var(--bg); }
+        }
         &> .timestamp { 
           background-color: var(--complementary_four);
           color: var(--bg);

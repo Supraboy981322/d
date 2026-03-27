@@ -346,11 +346,16 @@ function scroll(to_top){
 function new_msg_elem(msg) {
   total_entries++;
 
+  document.querySelectorAll("div.msg[selected]").forEach((elem) => {
+    elem.removeAttribute("selected");
+  });
+
   let msg_board = document.querySelector(".msg_container");
   let msg_container = document.createElement("div");
   msg_board.appendChild(msg_container);
   msg_container.id = msg.Timestamp;
   msg_container.className = "msg";
+  msg_container.setAttribute("selected", "");
 
   let timestamp = document.createElement("p");
   msg_container.appendChild(timestamp);
