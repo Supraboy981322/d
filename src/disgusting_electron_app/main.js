@@ -29,7 +29,17 @@ app.whenReady().then (() => {
       } else {
         console.log("config not found");
         let def_conf = {
-          server: "https://[your server address]"
+          server: "https://[your server address]",
+          reduce_requests: false,
+          colors: {
+            bg: "#000",
+            text: "#fff",
+            complementary_one: "#555",
+            complementary_one_alt: "#533",
+            complementary_two: "#333",
+            complementary_three: "#777",
+            complementary_four: "#999",
+          },
         };
         fs.writeFileSync(conf_file, JSON.stringify(def_conf, null, 2), "utf-8");
         conf = def_conf;
