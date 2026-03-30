@@ -529,20 +529,17 @@ async function do_cmd() {
 
   set_mode("normal"); 
   sw: switch (p.res[0]) {
+
+    // TODO: save altered config options
     case "set": {
-      if (p.res.length < 3) {
-        popup("missing args: need something to set", false);
-        return;
-      }
+      if (p.res.length < 3)
+        return popup("missing args: need something to set", false);
       switch (p.res[1]) {
         case "color": {
-          if (p.res.length < 4) {
-            popup(`missing arg: need a value for ${p.res[2]}`, false);
-            return
-          }
+          if (p.res.length < 4)
+            return popup(`missing arg: need a value for ${p.res[2]}`, false);
           document.documentElement.style.setProperty(`--${p.res[2]}`, p.res[3]);
         } break sw;
-
         case "server": {
           let old = p.res[2];
           conf.server = p.res[2];
@@ -554,10 +551,23 @@ async function do_cmd() {
         default: { popup(`invalid arg: I don't know how to set "${p.res[1]}"`, false) };
       }
     } break sw;
+
     case "refresh": { update_board() } break sw;
+
     case "sync": { sync_board(true) } break sw;
+
     case "q": case ":q": { window.api.quit() } break sw;
-    case "reload": { set_config() } break sw;
+
+    case "reload": {
+      if (p.res.length < 2)
+        return popup("missing args: need something to reload", false);
+      switch (p.res[1]) {
+        case "config", "conf": { set_config() } break sw;
+        case "board": case "scrollback": case "scroll": { update_board() } break sw;
+        default: { popup(`I do not know how to reload "${p.res[1]}"`, false) }
+      }
+    } break sw;
+
     default: { popup(`invalid command: "${p.res[0]}"`, false) }
   }
 }
