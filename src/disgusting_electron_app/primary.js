@@ -17,8 +17,9 @@ function exists(thing) {
 
 //sets the config at start
 async function set_config() {
-  console.log("getting config"); 
-  document.body.innerHTML = ""; //clears the DOM
+  console.log("getting config");
+  if (!start_ok)
+    document.body.innerHTML = ""; //clears the DOM
 
   //calls ipc handler to read config file
   try {
@@ -556,6 +557,7 @@ async function do_cmd() {
     case "refresh": { update_board() } break sw;
     case "sync": { sync_board(true) } break sw;
     case "q": case ":q": { window.api.quit() } break sw;
+    case "reload": { set_config() } break sw;
     default: { popup(`invalid command: "${p.res[0]}"`, false) }
   }
 }
