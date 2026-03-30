@@ -340,10 +340,7 @@ function scroll(to_top, n, smooth) {
   if (smooth)
     board.setAttribute("style", "scroll-behavior: smooth;");
   if (!exists(n)) {
-    if (to_top)
-      n = 0;
-    else
-      n = total_entries-1;
+    n = (to_top) ? 0 : total_entries-1;
     scroll_pos = n;
   }
 
