@@ -552,13 +552,11 @@ async function do_cmd() {
       }
     } break sw;
 
-    case "refresh": { update_board() } break sw;
-
     case "sync": { sync_board(true) } break sw;
 
     case "q": case ":q": { window.api.quit() } break sw;
 
-    case "reload": {
+    case "reload": case "refresh": {
       if (p.res.length < 2)
         return popup("missing args: need something to reload", false);
       switch (p.res[1]) {
