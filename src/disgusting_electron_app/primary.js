@@ -138,10 +138,10 @@ async function startup () {
   //updates the clock element every 1 second
   setInterval(clock, 1000);
   //sync board every 30 seconds by default 
-  if (!conf.options.reduce_requests)
+  if (!conf.options?.reduce_requests)
     setInterval(() => sync_board(false), 30000);
   //set to insert mode if enabled in config
-  if (conf.options.start_inserted)
+  if (conf.options?.start_inserted)
     set_mode("insert");
 }
 startup();
