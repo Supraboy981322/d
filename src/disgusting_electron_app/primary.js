@@ -34,10 +34,10 @@ async function set_config() {
     window.api.panic("CONFIG UNDEFINED");
 
   //makes sure user changed from the default value
-  if (conf.server?.includes("your server address")) {
+  if (!conf.server || conf.server?.includes("your server address")) {
     //makes sure background processes didn't set to true
     start_ok = false;
-    console.log("server url bad"); 
+    console.log(`server url is ${(conf.server) ? "bad" : "not set"}`);
 
     /* creates a popup element */
     
@@ -79,8 +79,9 @@ async function set_config() {
   if (conf.server.at(-1) === "/")
     conf.server = conf.server.slice(0, -1);
 
-  Object.entries( //use empty obj if doesn't exist 
-    (exists(conf.colors)) ? conf.colors : {}
+  //set the custom color palette (is that spelled correctly?)
+  Object.entries(
+    conf.colors ?? {}
   ).forEach(([name, val]) => {
     document.documentElement.style.setProperty(`--${name}`, val);
   });
@@ -90,7 +91,7 @@ async function set_config() {
 async function set_server(cont) {
   //makes sure that there's a validation result element
   let resp_msg = document.querySelector(".conf_popup_cont > #resp_msg");
-  if (!exists(resp_msg)) {
+  if (!resp_msg) {
     resp_msg = document.createElement("p");
     cont.appendChild(resp_msg);
     resp_msg.id = "resp_msg";
@@ -106,7 +107,7 @@ async function set_server(cont) {
 
   //attempts to make a request to the provided url
   try {
-    let resp = await fetch(url); 
+    let resp = await fetch(url);
     if (!resp.ok)
       throw new Error("url is invalid or unreachable");
     //sets validation result to ok
@@ -242,7 +243,7 @@ async function send(msg) {
           .parseFromString(await resp.text(), "text/html"),
         t = p.querySelector("p");
     //if the message is not a '<p>', it uses the '<body>' contents
-    msg_rendered = (t === null) ? p.body.innerHTML : t.innerHTML;
+    msg_rendered = (!t) ? p.body.innerHTML : t.innerHTML;
   } catch (e) {
     popup(e, true); //show err to user
     console.error(`send(): err{${e}} server{${conf.server}}`);
