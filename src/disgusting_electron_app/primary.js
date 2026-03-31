@@ -323,6 +323,7 @@ async function update_board() {
         })`
       );
 
+    document.querySelectorAll(".msg_container > div.msg")?.forEach((e) => e.remove());
     //creates new elements
     let json = await resp.json();
     total_entries = 0;
