@@ -34,15 +34,19 @@ pub fn main() !void {
             };
         };
 
-        while (hlp.next_key()) |key| switch (key) {
-            .backspace => _ = input_txt.pop(),
-            else => {
-                const key_int:c_int = @intFromEnum(key);
-                if (key_int >= 32 and key_int <= 125) {
-                    try input_txt.append(alloc, @intCast(key_int));
-                }
-            },
-        };
+        {
+            var itr = try @import("keys.zig").KeyItr.init(alloc);
+            defer itr.deinit(alloc);
+            while (itr.next()) |key| switch (key.tag) {
+                .backspace => _ = input_txt.pop(),
+                else => {
+                    const key_int:c_int = @intFromEnum(key.tag);
+                    if (key_int >= 32 and key_int <= 125) {
+                        try input_txt.append(alloc, @intCast(key_int));
+                    }
+                },
+            };
+        }
 
         rl.beginDrawing();
         defer rl.endDrawing();
