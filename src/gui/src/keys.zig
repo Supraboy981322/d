@@ -56,7 +56,6 @@ pub const KeyItr = struct {
                     alloc.free(buf);
                     buf = try alloc.alloc(Key, old_buf.len + 1);
                     buf[old_buf.len] = key.*;
-                    std.debug.print("active: {s}\n", .{@tagName(key.tag)});
                 };
                 break :b buf;
             },
@@ -68,7 +67,7 @@ pub const KeyItr = struct {
     }
 
     pub fn next(self:*KeyItr) ?Key {
-        if (self.buf.len >= self.pos) return null;
+        if (self.buf.len <= self.pos) return null;
         defer self.pos += 1;
         return self.buf[self.pos];
     }
