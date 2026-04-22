@@ -5,22 +5,29 @@ pub const Key = struct {
     tag:rl.KeyboardKey,
     last_active:f64 = 0.0,
     repeat_delay:f64,
+    repeat_rate:f64,
+    repeat_timer:f64,
 
     pub fn init(
         key:rl.KeyboardKey,
         repeat_delay:f64,
+        repeat_rate:f64,
     ) Key {
         return .{
             .tag = key,
             .repeat_delay = repeat_delay,
+            .repeat_timer = repeat_delay,
+            .repeat_rate = repeat_rate,
         };
     }
 
     pub fn is_active(self:*Key, t:f64) bool {
-        if (self.last_active + self.repeat_delay <= t and rl.isKeyDown(self.tag)) {
+        if (self.last_active + self.repeat_timer <= t and rl.isKeyDown(self.tag)) {
             self.last_active = t;
+            self.repeat_timer = self.repeat_rate;
             return true;
-        }
+        } else if (!rl.isKeyDown(self.tag) and self.last_active + self.repeat_timer >= t)
+            self.repeat_timer = self.repeat_delay;
         return false;
     }
 };
@@ -36,7 +43,7 @@ const num_keys:comptime_int = std.meta.tags(rl.KeyboardKey).len;
 pub const keys:[num_keys]Key = b: {
     var buf:[num_keys]Key = undefined;
     for (std.meta.tags(rl.KeyboardKey), 0..) |key, i| {
-        buf[i] = .init(key, 0.05);
+        buf[i] = .init(key, 0.4, 0.05);
     }
     break :b buf;
 };
