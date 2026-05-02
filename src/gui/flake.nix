@@ -14,7 +14,7 @@
   outputs = { self, nixpkgs, flake-utils, zig_overlay }:
     (flake-utils.lib.eachDefaultSystem (system:
       let
-        zigVersion = "0.15.2";
+        zigVersion = "0.16.0";
 
         # selected Zig package
         zig = zig_overlay.packages.${system}.${zigVersion};
@@ -28,6 +28,19 @@
         server = import ./server.nix;
       in {
         devShells.default = pkgs.mkShell ({
+          shellHook = ''
+            export LD_LIBRARY_PATH=${
+              pkgs.lib.makeLibraryPath (with pkgs; [
+                mesa
+                libXi
+                libXcursor
+                libXrandr
+                libglvnd
+                libXinerama
+                wayland
+                libxkbcommon
+            ])}:$LD_LIBRARY_PATH
+          '';
           packages = (with pkgs; [
             # raylib deps
             mesa
