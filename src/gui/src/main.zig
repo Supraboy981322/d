@@ -3,8 +3,10 @@ const rl = @import("raylib");
 const rg = @import("raygui");
 const hlp = @import("helpers.zig");
 
-pub fn main(init:std.process.Init) !void {
-    const alloc = init.gpa;
+pub fn main() !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const alloc = gpa.allocator();
 
     rl.initWindow(800, 480, "d_gui");
     defer rl.closeWindow();

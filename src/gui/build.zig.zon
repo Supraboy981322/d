@@ -1,11 +1,10 @@
 .{
     .name = .d_gui,
-    .version = "0.16.0",
+    .version = "0.15.2",
     .dependencies = .{
         .raylib_zig = .{
-            //last version of Raylib-Zig that was on a non-development branch of Zig (0.15.1)
-            .url = "git+https://github.com/raylib-zig/raylib-zig#58f3c0fa328fc9ff48d17c2c3771ab9c5114aaa6",
-            .hash = "raylib_zig-6.0.0-KE8REMNkBQCpxwqT9ubVNf5aEOcWRUVIaH2sgt_sDDoZ",
+            .url = "git+https://github.com/raylib-zig/raylib-zig#aa9ee05f2246b813f75206bf817c9fbdfcb06101",
+            .hash = "raylib_zig-5.6.0-dev-KE8RECFQBQBn0BrEyEyK5NST461oRzpk6XeGeF9qBU2M",
         },
     },
     .paths = .{""},

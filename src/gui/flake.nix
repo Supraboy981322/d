@@ -14,7 +14,7 @@
   outputs = { self, nixpkgs, flake-utils, zig_overlay }:
     (flake-utils.lib.eachDefaultSystem (system:
       let
-        zigVersion = "0.16.0";
+        zigVersion = "0.15.2";
 
         # selected Zig package
         zig = zig_overlay.packages.${system}.${zigVersion};
