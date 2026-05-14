@@ -59,7 +59,7 @@ async function set_config() {
     input_title.innerText = "please enter your server address";
 
     //input box
-    let input_box = document.createElement("input");
+    let input_box = document.createElement("textarea");
     cont.appendChild(input_box);
     input_box.setAttribute("type", "text");
     input_box.addEventListener("keydown", (event) => {
@@ -168,10 +168,10 @@ async function construct() {
   msg_container.className = "msg_container";
 
   //creates an entry box
-  let msg_box = document.createElement("input");
+  let msg_box = document.createElement("textarea");
   board.appendChild(msg_box);
   msg_box.className = "msg";
-  msg_box.type = "text";
+  msg_box.setAttribute("type", "text");
   msg_box.addEventListener("keydown", (event) => {
     //either send or run a command on enter key (depending on mode)
     if (event.key === "Enter") switch (mode) {
@@ -205,10 +205,10 @@ async function send(msg) {
   if (!start_ok) return;
 
   //get the message box
-  let msg_box = document.querySelector("input.msg");
+  let msg_box = document.querySelector("textarea.msg");
   //sets message if not provided, sets from input
   if (!exists(msg))
-    msg = msg_box.value;
+    msg = msg_box.value.trim();
 
   //return if empty message
   if (!exists(msg) || msg === "")
@@ -464,7 +464,7 @@ document.addEventListener("keydown", (event) => {
 function set_mode(m) {
   mode = m;
   //focues or unfocuses the input bar if in inser to command mode
-  let input = document.querySelector("input.msg");
+  let input = document.querySelector("textarea.msg");
   if (mode === "insert" || mode === "command")
     input.focus();
   else
@@ -474,7 +474,7 @@ function set_mode(m) {
 
 //string parsing in JS? HERESY
 async function do_cmd() {
-  let input = document.querySelector("input.msg");
+  let input = document.querySelector("textarea.msg");
   let p = {
     esc: false,
     stringing: false,

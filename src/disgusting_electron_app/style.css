@@ -68,7 +68,7 @@ strong { font-weight: bold }
     text-align: text-bottom;
     background: var(--bg);
     flex-direction: column;
-    &>input.msg {
+    &>textarea.msg {
       background-color: var(--complementary_two);
       border: 0.1em solid var(--complementary_three);
       border-radius: 1em;
@@ -117,12 +117,12 @@ strong { font-weight: bold }
   width: fit-content;
   padding: 4em;
   border-radius: 0.25em;
-  p, input, button {
+  p, input, textarea, button {
     margin: 0.5em auto;
     display: block;
     border-radius: 0.25em;
   }
-  input[type="text"], button {
+  input[type="text"], textarea[type="text"], button {
     background-color: var(--bg);
     color: var(--text);
     padding: 0.15em;
