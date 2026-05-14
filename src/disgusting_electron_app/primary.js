@@ -400,7 +400,7 @@ function new_msg_elem(msg) {
   let msg_txt = document.createElement("p");
   msg_container.appendChild(msg_txt);
   msg_txt.className = "txt";
-  msg_txt.innerHTML = msg.Msg;
+  msg_txt.innerHTML = msg.Msg.trim().replace(/(\r\n|\n|\r)/g, "<br>");
 
   scroll(false, null, true); //scrolls to the bottom
   scroll_pos = total_entries - 1;
