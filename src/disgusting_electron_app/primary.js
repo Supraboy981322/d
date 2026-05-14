@@ -64,7 +64,7 @@ async function set_config() {
     input_box.setAttribute("type", "text");
     input_box.addEventListener("keydown", (event) => {
       //<enter> key server is set and window closes 
-      if (event.key === "Enter") set_server(cont);
+      if (event.key === "Enter" && !event.shiftKey) set_server(cont);
     });
 
     //incase the user insists on pressing a button
@@ -174,9 +174,12 @@ async function construct() {
   msg_box.setAttribute("type", "text");
   msg_box.addEventListener("keydown", (event) => {
     //either send or run a command on enter key (depending on mode)
-    if (event.key === "Enter") switch (mode) {
-      case "insert": send(); break
-      case "command": do_cmd(); break
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      switch (mode) {
+        case "insert": send(); break
+        case "command": do_cmd(); break
+      }
     }
   });
   //set insert mode if clicked
