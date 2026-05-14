@@ -30,7 +30,13 @@ code {
   background-color: var(--complementary_one);
   padding: 0 0.2em;
   border-radius: 0.25em;
+  white-space: pre-wrap;
+  background-size: cover;
+  display: inline-block;
+  overflow-x: auto;
+  vertical-align: top;
 }
+
 em { font-style: italic }
 strong { font-weight: bold }
 
